@@ -1,0 +1,11 @@
+{
+    "private": true,
+    "version": "0.0.1",
+    "type": "module",
+    "dependencies": {
+        "json-rpc-2.0": "^1.7.0"
+    },
+    "workspaces": [
+        "builtin/cjs"
+    ]
+}

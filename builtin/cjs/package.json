@@ -1,0 +1,14 @@
+{
+    "name": "@builtin/cjs",
+    "version": "0.0.1",
+    "private": true,
+    "type": "module",
+    "exports": {
+        ".": {
+            "import": "./src/index.js"
+        }
+    },
+    "files": [
+        "src/**/*"
+    ]
+}

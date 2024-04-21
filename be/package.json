@@ -1,0 +1,27 @@
+{
+    "author": {
+        "name": "vanilla",
+        "url": "https://github.com/VanillaMaster"
+    },
+    "repository": {
+        "type": "git"
+    },
+    "name": "@builtin/server",
+    "version": "1.0.0",
+    "private": true,
+    "type": "module",
+    "exports": {
+        
+    },
+    "files": [
+        "src/**/*"
+    ],
+    "scripts": {},
+    "license": "ISC",
+    "dependencies": {
+        "find-my-way": "^8.1.0"
+    },
+    "devDependencies": {
+        "@types/node": "^20.12.7"
+    }
+}

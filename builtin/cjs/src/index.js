@@ -1,15 +1,7 @@
 /**
  * @param { Response } res 
  */
-function toText(res) { return res.text(); }
-/**
- * @param { Response } res 
- */
 function toJson(res) { return res.json(); }
-/**
- * @param { string } specifier 
- */
-function __import(specifier) { return import(specifier); }
 
 /**@type { Set<string> } */
 const loadedPackages = new Set();

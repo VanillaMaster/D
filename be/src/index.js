@@ -4,6 +4,7 @@ import { handleStaticFile, handleStaticFiles } from "./handleStaticFiles.js";
 import { assetsFolder, modulesFolder, port, workerPath } from "./config.js";
 import { documentCachePath, modules, modulesCachePath } from "./cache.js";
 
+import { NameSpace_FILE, v5 } from "./uuid/v5.js";
 
 const router = Router({
     defaultRoute(req, res){
@@ -32,6 +33,9 @@ router.get("/api/modules", function(req, res, params, store, query){
     if (query.name === undefined) {
         return void handleStaticFile(req, res, modulesCachePath);
     } else if (query.name in modules) {
+        const uuid = v5(Buffer.from(query.name, "utf8"), NameSpace_FILE);
+        console.log(uuid);
+
         res.writeHead(200, { "Content-Type": "application/json" });
         res.end(modules[query.name]);
     } else {

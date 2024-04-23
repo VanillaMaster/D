@@ -7,6 +7,6 @@
         "json-rpc-2.0": "^1.7.0"
     },
     "workspaces": [
-        "builtin/cjs"
+        "builtin/*"
     ]
 }

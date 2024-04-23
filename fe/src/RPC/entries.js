@@ -1,1 +1,1 @@
-export { listExportedNames } from "@builtin/cjs";
+export { listExportedNames } from "@builtin/cjs/client";

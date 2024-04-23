@@ -3,8 +3,18 @@
  */
 function toJson(res) { return res.json(); }
 
+/**
+ * @param { Error } error 
+ * @returns { never }
+ */
+function __throw(error) {
+    throw error;
+}
+
 /**@type { Set<string> } */
 const loadedPackages = new Set();
+/**@type { Map<string, Module> } */
+const packagesCache = new Map();
 /**@type { Map<string, Module> } */
 const modulesCache = new Map();
 /**@type { Map<JsModule, CJSExecutor> } */
@@ -33,7 +43,7 @@ export async function preloadCjsPackage(pkg) {
 
     for (const specifier in importmap) {
         const pathname = importmap[specifier];
-        modulesCache.set(specifier, /**@type { Module } */ (modulesCache.get(pathname)));
+        packagesCache.set(specifier, /**@type { Module } */ (modulesCache.get(pathname)));
     }
 
     loadedPackages.add(pkg);
@@ -105,12 +115,38 @@ export async function listExportedNames(specifier) {
  * @param { string } specifier 
  */
 export function globalRequire(specifier) {
+    const module = packagesCache.get(specifier);
+    if (module === undefined) return undefined;
+    return exportModule(module);
+}
+
+/**
+ * @param { string } specifier 
+ */
+export function absoluteRequire(specifier) {
     const module = resolveModule(specifier);
+    if (module === undefined) return undefined;
+    return exportModule(module);
+}
+
+/**
+ * @param { string } specifier 
+ * @param { Module } parent 
+ */
+export function relativeRequire(specifier, parent) {
+    ({ pathname: specifier } = new URL(specifier, new URL(parent.filename, document.location.origin)));
+    return absoluteRequire(specifier);
+}
+
+/**
+ * @param { Module } module 
+ */
+function exportModule(module) {
     switch (module.constructor) {
         case JsModule:
-            return requireJsModule(/**@type { JsModule }*/(module));
+            return exportJsModule(/**@type { JsModule }*/(module))
         case JsonModule:
-            return requireJsonModule(/**@type { JsonModule }*/(module));
+            return exportJsonModule(/**@type { JsonModule }*/(module))
         default:
             throw new Error("Unavailable");
     }
@@ -119,10 +155,10 @@ export function globalRequire(specifier) {
 /**
  * @param { JsModule } module 
  */
-function requireJsModule(module) {
+function exportJsModule(module) {
     if (module.loaded) return module.exports;
     const executor = executors.get(module);
-    if (!executors.delete(module)) throw new Error();
+    if (!executors.delete(module)) throw new Error("Unavailable");
     /**@type { NonNullable<typeof executor> }*/
     (executor)(module.exports, createLocalRequire(module), module, module.filename, module.dirname);
     module.loaded = true;
@@ -131,7 +167,7 @@ function requireJsModule(module) {
 /**
  * @param { JsonModule } module 
  */
-function requireJsonModule(module) {
+function exportJsonModule(module) {
     return module.exports;
 }
 
@@ -146,8 +182,6 @@ function resolveModule(specifier) {
     if ((module = modulesCache.get(`${specifier}.json`)) !== undefined) return module;
     if ((module = modulesCache.get(`${specifier}/index.js`)) !== undefined) return module;
     if ((module = modulesCache.get(`${specifier}/index.json`)) !== undefined) return module;
-    
-    throw new Error();
 }
 
 /**
@@ -156,10 +190,7 @@ function resolveModule(specifier) {
  */
 function createLocalRequire(parent) {
     return function(specifier) {
-        if (modulesCache.has(specifier)) return globalRequire(specifier);
-
-        ({ pathname: specifier } = new URL(specifier, new URL(parent.filename, document.location.origin)));
-        return globalRequire(specifier);
+        return globalRequire(specifier) ?? relativeRequire(specifier, parent) ?? __throw(new Error(`Cannot find module '${specifier}'`));
     }
 }
 

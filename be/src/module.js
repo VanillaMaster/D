@@ -1,4 +1,5 @@
 import { lstat, readFile, readdir, readlink } from "node:fs/promises";
+import { pathToFileURL } from "node:url"
 
 /**
  * @typedef ModuleRecord
@@ -99,7 +100,8 @@ function processModulesEntry(element, base, registry, allowNamespaces) {
  * @param { boolean } allowNamespaces 
  */
 async function processModulesSymbolicLink(element, base, registry, allowNamespaces) {
-    const path = await readlink(`${element.path}${element.name}`);
+    const link = await readlink(`${element.path}${element.name}`);
+    const path = new URL(link, pathToFileURL(element.path))
     const stats = await lstat(path);
     if (stats.isDirectory()) return processModulesDirectory(element, base, registry, allowNamespaces);
 }

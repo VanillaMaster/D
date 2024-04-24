@@ -1,11 +1,11 @@
 /**@type { Record<string, string> } */
 const MIME = {
-    "js":   "text/javascript",
-    "json": "application/json",
+    ".js":   "text/javascript",
+    ".json": "application/json",
 
-    "html": "text/html",
+    ".html": "text/html",
 
-    "png": "image/png"
+    ".png": "image/png"
 }
 
 const DEFAULT = "application/octet-stream";

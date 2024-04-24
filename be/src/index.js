@@ -4,8 +4,8 @@ import { createServer } from "node:http"
 import { handleStaticFile, handleStaticFiles, handleStaticResource } from "./handleStaticFiles.js";
 import { assetsFolder, modulesFolder, port, workerPath } from "./config.js";
 import { documentCachePath, modulesCacheFolder, modulesCacheIndex } from "./cache.js";
-
 import { NameSpace_FILE, v5 } from "./uuid/v5.js";
+import { resolve } from "node:path";
 
 const router = Router({
     defaultRoute(req, res){
@@ -31,7 +31,7 @@ router.get("/worker", function(req, res){
 });
 
 router.get("/api/modules", function(req, res, params, store, { name }){
-    if (name !== undefined) return void handleStaticResource(req, res, new URL(v5(Buffer.from(name), NameSpace_FILE), modulesCacheFolder), "application/json");
+    if (name !== undefined) return void handleStaticResource(req, res, resolve(modulesCacheFolder, v5(Buffer.from(name), NameSpace_FILE)), "application/json");
     return void handleStaticResource(req, res, modulesCacheIndex, "application/json");
 })
 

@@ -4,13 +4,15 @@ import { cacheFolder, modulesFolder, rootpagePath } from "./config.js";
 import { computeImportMap, listModules } from "./module.js";
 import { render } from "./template.js";
 import { v5, NameSpace_FILE, NameSpace_INDEX } from "./uuid/v5.js";
+import { resolve } from "node:path";
 
-const modulesCacheFolder = new URL("modules/", cacheFolder);
+const modulesCacheFolder = resolve(cacheFolder, "modules");
+
 await mkdir(modulesCacheFolder, { recursive: true });
 
-const modulesCacheIndex = new URL(v5(Buffer.from("modules"), NameSpace_INDEX), modulesCacheFolder);
+const modulesCacheIndex = resolve(modulesCacheFolder, v5(Buffer.from("modules"), NameSpace_INDEX));
 
-const documentCachePath = new URL("./index.html", cacheFolder);
+const documentCachePath = resolve(cacheFolder, "index.html");
 
 {
     const modules = await listModules(modulesFolder);
@@ -41,7 +43,7 @@ async function cacheModules(modules) {
     const tasks = [];
     for (const module in modules) {
         const name = v5(Buffer.from(module), NameSpace_FILE);
-        const path = new URL(name, modulesCacheFolder)
+        const path = resolve(modulesCacheFolder, name);
         tasks.push(writeFile(path, JSON.stringify(modules[module])));
     }
     for (const task of tasks) await task;

@@ -1,5 +1,7 @@
-import { lstat, readFile, readdir, readlink } from "node:fs/promises";
-import { pathToFileURL } from "node:url"
+import { lstat, readFile, readdir, readlink, open } from "node:fs/promises";
+import { resolve, parse, dirname } from "node:path"
+import { fileURLToPath } from "node:url"
+
 
 /**
  * @typedef ModuleRecord
@@ -14,21 +16,22 @@ import { pathToFileURL } from "node:url"
 
 import { Dirent, existsSync } from "node:fs";
 /**
- * @param { URL } root 
+ * @param { string } path 
  */
-function* paths(root) {
-    yield root;
-    while (root.pathname !== "/" && !root.pathname.endsWith(":/")) {
-        yield root = new URL("..", root);
-    }
+function* paths(path) {
+    const { root } = parse(path);
+    do {
+        yield (path = dirname(path));
+    } while (path !== root);
 }
 
 /**
  * @param { string | URL } entry
  */
 export function getModuleRoot(entry) {
-    for (const root of paths(new URL(".", entry))) {
-        const pjson = new URL("package.json", root);
+    const path = fileURLToPath(entry)
+    for (const root of paths(path)) {
+        const pjson = resolve(root, "package.json")
         if (existsSync(pjson)) return root;
     }
     throw new Error();
@@ -68,76 +71,74 @@ export function computeImportMap(modules) {
 }
 
 /**
- * @param { URL } modulesFolder 
+ * @param { string } path 
  */
-export async function listModules(modulesFolder) {
+export async function listModules(path) {
     /**@type { Registry } */
     const registry = {};
 
-    const elements = await readdir(modulesFolder, {
+    const elements = await readdir(path, {
         withFileTypes: true
     }).catch(__array);
 
-    await Promise.all(elements.map(element => processModulesEntry(element, modulesFolder, registry, true)));
+    await Promise.all(elements.map(element => processModulesEntry(element, path, registry, true)));
 
     return registry;
 }
 
 /**
  * @param { Dirent } element 
- * @param { URL } base 
+ * @param { string } path 
  * @param { Registry } registry 
  * @param { boolean } allowNamespaces 
  */
-function processModulesEntry(element, base, registry, allowNamespaces) {
-    if (element.isDirectory()) return processModulesDirectory(element, base, registry, allowNamespaces);
-    if (element.isSymbolicLink()) return processModulesSymbolicLink(element, base, registry, allowNamespaces);
+function processModulesEntry(element, path, registry, allowNamespaces) {
+    if (element.isDirectory()) return processModulesDirectory(element, path, registry, allowNamespaces);
+    if (element.isSymbolicLink()) return processModulesSymbolicLink(element, path, registry, allowNamespaces);
 }
 /**
  * @param { Dirent } element 
- * @param { URL } base 
+ * @param { string } path 
  * @param { Registry } registry 
  * @param { boolean } allowNamespaces 
  */
-async function processModulesSymbolicLink(element, base, registry, allowNamespaces) {
-    const link = await readlink(`${element.path}${element.name}`);
-    const path = new URL(link, pathToFileURL(element.path))
-    const stats = await lstat(path);
-    if (stats.isDirectory()) return processModulesDirectory(element, base, registry, allowNamespaces);
+async function processModulesSymbolicLink(element, path, registry, allowNamespaces) {
+    const link = await readlink(resolve(element.path, element.name));
+    const stats = await lstat(resolve(element.path, link));
+    if (stats.isDirectory()) return processModulesDirectory(element, path, registry, allowNamespaces);
 }
 /**
  * @param { Dirent } element 
- * @param { URL } base 
+ * @param { string } path 
  * @param { Registry } registry 
  * @param { boolean } allowNamespaces 
  */
-function processModulesDirectory(element, base, registry, allowNamespaces) {
+function processModulesDirectory(element, path, registry, allowNamespaces) {
     const { name } = element
-    const url = new URL(`${name}/`, base);
+    const folder = resolve(path, name);
     if (name.startsWith("@")) {
-        if (allowNamespaces) return processNamespace(url, registry)
-    } else return processModule(url, registry);
+        if (allowNamespaces) return processNamespace(folder, registry)
+    } else return processModule(folder, registry);
 }
 
 /**
- * @param { URL } url 
+ * @param { string } path 
  * @param { Registry } registry 
  */
-async function processNamespace(url, registry) {
-    const elements = await readdir(url, { withFileTypes: true });
-    await Promise.all(elements.map(element => processModulesEntry(element, url, registry, false)))
+async function processNamespace(path, registry) {
+    const elements = await readdir(path, { withFileTypes: true });
+    await Promise.all(elements.map(element => processModulesEntry(element, path, registry, false)))
 }
 
 const EXTENSIONS = [".js", ".cjs", ".mjs", ".json"];
 
 /**
- * @param { URL } url 
+ * @param { string } path 
  * @param { Registry } registry 
  */
-async function processModule(url, registry) {
+async function processModule(path, registry) {
 
-    const pjsonUrl = new URL("package.json", url);
-    const buffer = await readFile(pjsonUrl).catch(__null);
+    const buffer = await readFile(resolve(path, "package.json")).catch(__null);
     if (buffer == null) return;
     /**@type { pjson } */
     const pjson = JSON.parse(buffer);
@@ -155,7 +156,7 @@ async function processModule(url, registry) {
     /**@type { string[] } */
     const importmapExclude = [];
 
-    const filesPrmise = readdir(url, { recursive: true });
+    const filesPrmise = readdir(path, { recursive: true });
     const fileList = await filesPrmise;
     /**@type { string[] } */
     const files = [];

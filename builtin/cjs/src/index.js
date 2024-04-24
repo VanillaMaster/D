@@ -1,24 +1,18 @@
+import { JsModule, EXECUTOR, NAMED_EXPORT } from "./JsModule.js";
+import { JsonModule } from "./JsonModule.js";
+import { loadedPackages, modulesCache, packagesCache} from "./cache.js"
+/**@import { Module } from "./Module.js" */
+/**@import { CJSRequire, CJSExecutor } from "./JsModule.js" */
+
 /**
  * @param { Response } res 
  */
 function toJson(res) { return res.json(); }
-
 /**
  * @param { Error } error 
  * @returns { never }
  */
-function __throw(error) {
-    throw error;
-}
-
-/**@type { Set<string> } */
-const loadedPackages = new Set();
-/**@type { Map<string, Module> } */
-const packagesCache = new Map();
-/**@type { Map<string, Module> } */
-const modulesCache = new Map();
-/**@type { Map<JsModule, CJSExecutor> } */
-const executors = new Map();
+function __throw(error) { throw error; }
 
 /**
  * @param { string } pkg
@@ -28,9 +22,9 @@ export async function preloadCjsPackage(pkg) {
 
     const url = new URL("/api/modules", document.location.origin);
     url.searchParams.append("name", pkg);
+    /**@type { { files: string[], dependencies: string[], importmap: Record<string, string> } } */
     const data = await fetch(url).then(toJson);
 
-    /**@type { { files: string[], dependencies: string[], importmap: Record<string, string> } } */
     const { files, dependencies, importmap } = data;
 
     // const dependenciesPromise = Promise.all(dependencies.map(__import));
@@ -47,7 +41,6 @@ export async function preloadCjsPackage(pkg) {
     }
 
     loadedPackages.add(pkg);
-    // await dependenciesPromise;
 }
 
 /**
@@ -59,7 +52,9 @@ async function fetchModule(file) {
     const mime = response.headers.get("Content-Type");
     switch (mime) {
         case "text/javascript":
+        case "application/javascript":
             return fetchJsModule(file, response);
+        case "text/json":
         case "application/json":
             return fetchJsonModule(file, response);
         default:
@@ -107,7 +102,7 @@ export async function listExportedNames(specifier) {
     const exports = globalRequire(specifier);
     /**@type { string[] } */
     const exportedNames = [];
-    if (exports[JsModule.namedExport] === true) for (const name in exports) if (name !== "default") exportedNames.push(name);
+    if (exports[NAMED_EXPORT] === true) for (const name in exports) if (name !== "default") exportedNames.push(name);
     return exportedNames;
 }
 
@@ -156,12 +151,10 @@ function exportModule(module) {
  * @param { JsModule } module 
  */
 function exportJsModule(module) {
-    if (module.loaded) return module.exports;
-    const executor = executors.get(module);
-    if (!executors.delete(module)) throw new Error("Unavailable");
-    /**@type { NonNullable<typeof executor> }*/
-    (executor)(module.exports, createLocalRequire(module), module, module.filename, module.dirname);
-    module.loaded = true;
+    const executor = module[EXECUTOR];
+    if (executor == null) return module.exports;
+    module[EXECUTOR] = null;
+    executor(module.exports, createLocalRequire(module), module, module.filename, module.dirname);
     return module.exports;
 }
 /**
@@ -191,88 +184,5 @@ function resolveModule(specifier) {
 function createLocalRequire(parent) {
     return function(specifier) {
         return globalRequire(specifier) ?? relativeRequire(specifier, parent) ?? __throw(new Error(`Cannot find module '${specifier}'`));
-    }
-}
-
-/**
- * @callback CJSRequire
- * @param { string } specifier
- * @returns { any }
- * 
- * @callback CJSExecutor
- * @param { Record<string, any> } exports
- * @param { CJSRequire } require
- * @param { JsModule } module
- * @param { string } __filename
- * @param { string } __dirname
- * @returns { void }
- */
-class Module {
-    /**
-     * @param { string } id 
-     * @param { string } filename 
-     * @param { any } exports 
-     */
-    constructor(id, filename, exports) {
-        this.id = id;
-        this.filename = filename;
-        this.exports = exports;
-        ({ pathname: this.dirname } = new URL(".", new URL(filename, document.location.origin)));
-    }
-    /**
-     * @type { any }
-     */
-    exports;
-    /**
-     * @readonly
-     * @type { string }
-     */
-    filename;
-    /**
-     * @readonly
-     * @type { string }
-     */
-    dirname;
-    /**
-     * @readonly
-     * @type { string }
-     */
-    id;
-}
-class JsModule extends Module {
-    /**
-     * @readonly
-     */
-    static namedExport = Symbol("named export");
-    /**
-     * @private
-     * @readonly
-     * @type { readonly string[] }
-     */
-    static args = ["exports", "require", "module", "__filename", "__dirname"]
-    /**
-     * @param { string } id 
-     * @param { string } filename 
-     * @param { string } text 
-     */
-    constructor(id, filename, text) {
-        super(id, filename, { [JsModule.namedExport]: true });
-        const executor = /**@type { CJSExecutor } */(new Function(...JsModule.args, text));
-        executors.set(this, executor);
-    }
-    /**
-     * @type { boolean }
-     */
-    loaded = false;
-}
-
-class JsonModule extends Module {
-    /**
-     * @param { string } id 
-     * @param { string } filename 
-     * @param { any } data 
-     */
-    constructor(id, filename, data) {
-        super(id, filename, data);
     }
 }

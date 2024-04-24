@@ -3,7 +3,9 @@ const MIME = {
     "js":   "text/javascript",
     "json": "application/json",
 
-    "html": "text/html"
+    "html": "text/html",
+
+    "png": "image/png"
 }
 
 const DEFAULT = "application/octet-stream";

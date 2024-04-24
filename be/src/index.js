@@ -1,8 +1,9 @@
+/**@import { ServerResponse } from "node:http" */
 import Router from "find-my-way";
 import { createServer } from "node:http"
-import { handleStaticFile, handleStaticFiles } from "./handleStaticFiles.js";
+import { handleStaticFile, handleStaticFiles, handleStaticResource } from "./handleStaticFiles.js";
 import { assetsFolder, modulesFolder, port, workerPath } from "./config.js";
-import { documentCachePath, modules, modulesCachePath } from "./cache.js";
+import { documentCachePath, modulesCacheFolder, modulesCacheIndex } from "./cache.js";
 
 import { NameSpace_FILE, v5 } from "./uuid/v5.js";
 
@@ -29,19 +30,9 @@ router.get("/worker", function(req, res){
     handleStaticFile(req, res, workerPath);
 });
 
-router.get("/api/modules", function(req, res, params, store, query){
-    if (query.name === undefined) {
-        return void handleStaticFile(req, res, modulesCachePath);
-    } else if (query.name in modules) {
-        const uuid = v5(Buffer.from(query.name, "utf8"), NameSpace_FILE);
-        console.log(uuid);
-
-        res.writeHead(200, { "Content-Type": "application/json" });
-        res.end(modules[query.name]);
-    } else {
-        res.statusCode = 404;
-        res.end();
-    }
+router.get("/api/modules", function(req, res, params, store, { name }){
+    if (name !== undefined) return void handleStaticResource(req, res, new URL(v5(Buffer.from(name), NameSpace_FILE), modulesCacheFolder), "application/json");
+    return void handleStaticResource(req, res, modulesCacheIndex, "application/json");
 })
 
 const server = createServer();

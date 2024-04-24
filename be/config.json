@@ -2,7 +2,7 @@
     "assets": "../fe/",
     "modules": "../node_modules/",
     "worker": "../fe/worker.js",
-    "cache": "./cache/",
+    "cache": "./.cache/",
     "rootpage": "../fe/index.html",
 
     "port": 8080

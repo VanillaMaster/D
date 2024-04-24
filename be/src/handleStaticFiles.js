@@ -1,12 +1,8 @@
+/**@import { IncomingMessage, ServerResponse } from "node:http" */
 import { open } from "node:fs/promises";
 import { getMime } from "./mime.js";
 import { getExt } from "./ext.js";
 
-/**
- * @typedef { import("node:http").IncomingMessage } IncomingMessage
- * @typedef { import("node:http").ServerResponse } ServerResponse
- * @typedef { import("node:fs/promises").FileHandle } FileHandle;
- */
 function __null() { return null; }
 /**
  * @param { ServerResponse } res 
@@ -27,11 +23,9 @@ export async function handleStaticFiles(req, res, params, root) {
     const absolute = new URL(path, root);
     const file = await open(absolute, 'r').catch(__null);
     if (file === null) return void notFound(res);
-    res.writeHead(200, { "Content-Type": getMime(getExt(absolute.pathname)) });
-    const stream = file.createReadStream();
-    stream.addListener("close", function() {
-        file.close();
-    });
+    res.setHeader("Content-Type", getMime(getExt(absolute.pathname)));
+    res.statusCode = 200;
+    const stream = file.createReadStream({ autoClose: true });
     stream.pipe(res);
 
 }
@@ -44,10 +38,23 @@ export async function handleStaticFiles(req, res, params, root) {
 export async function handleStaticFile(req, res, path) {
     const file = await open(path, 'r').catch(__null);
     if (file === null) return void notFound(res);
-    res.writeHead(200, { "Content-Type": getMime(getExt(path.pathname)) });
-    const stream = file.createReadStream();
-    stream.addListener("close", function() {
-        file.close();
-    });
+    res.setHeader("Content-Type", getMime(getExt(path.pathname)));
+    res.statusCode = 200;
+    const stream = file.createReadStream({ autoClose: true });
+    stream.pipe(res);
+}
+
+/**
+ * @param { IncomingMessage } req
+ * @param { ServerResponse } res
+ * @param { URL } path
+ * @param { string } mime 
+ */
+export async function handleStaticResource(req, res, path, mime) {
+    const file = await open(path, 'r').catch(__null);
+    if (file === null) return void notFound(res);
+    res.setHeader("Content-Type", mime);
+    res.statusCode = 200;
+    const stream = file.createReadStream({ autoClose: true });
     stream.pipe(res);
 }

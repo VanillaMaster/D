@@ -8,6 +8,7 @@ const self = /**@type {*}*/ (globalThis.self);
  * @param { URLSearchParams } searchParams 
  */
 export function loadCjsModule(e, searchParams){
+    if (e.clientId === "") return void e.respondWith(new Response(null, { status: 422 }));
     const entrypoint = searchParams.get("specifier");
     if (entrypoint == null) return void e.respondWith(new Response(null, { status: 422 }));
 

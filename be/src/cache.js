@@ -6,13 +6,13 @@ import { render } from "./template.js";
 import { v5, NameSpace_FILE, NameSpace_INDEX } from "./uuid/v5.js";
 import { resolve } from "node:path";
 
-const modulesCacheFolder = resolve(cacheFolder, "modules");
+export const modulesCacheFolder = resolve(cacheFolder, "modules");
 
 await mkdir(modulesCacheFolder, { recursive: true });
 
-const modulesCacheIndex = resolve(modulesCacheFolder, v5(Buffer.from("modules"), NameSpace_INDEX));
+export const modulesCacheIndex = resolve(modulesCacheFolder, v5(Buffer.from("modules"), NameSpace_INDEX));
 
-const documentCachePath = resolve(cacheFolder, "index.html");
+export const documentCachePath = resolve(cacheFolder, "index.html");
 
 {
     const modules = await listModules(modulesFolder);
@@ -25,14 +25,6 @@ const documentCachePath = resolve(cacheFolder, "index.html");
         importmap
     });
     await writeFile(documentCachePath, document);
-}
-
-
-export {
-    modulesCacheIndex,
-    modulesCacheFolder,
-
-    documentCachePath,
 }
 
 /**

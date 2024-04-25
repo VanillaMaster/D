@@ -1,0 +1,12 @@
+{
+    "start_url": "/",
+    "name": "D",
+    "display": "standalone",
+    "icons": [
+        {
+            "src": "/assets/placeholder.png",
+            "sizes": "420x420",
+            "type": "image/png"
+        }
+    ]
+}

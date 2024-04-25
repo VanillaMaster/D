@@ -1,23 +1,15 @@
 {
-    "author": {
-        "name": "vanilla",
-        "url": "https://github.com/VanillaMaster"
-    },
-    "repository": {
-        "type": "git"
-    },
     "name": "@builtin/server",
-    "version": "1.0.0",
+    "version": "0.0.1",
     "private": true,
     "type": "module",
     "exports": {
-        
+        ".": null
     },
     "files": [
         "src/**/*"
     ],
     "scripts": {},
-    "license": "ISC",
     "dependencies": {
         "find-my-way": "^8.1.0"
     },

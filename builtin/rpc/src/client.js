@@ -1,16 +1,39 @@
+/**@import { JSONRPCRequest } from "json-rpc-2.0" */
 import { JSONRPCClient } from "json-rpc-2.0"
 
+const headers = new Headers({ "content-type": "application/json" });
+const method = "POST";
+
+/**
+ * @param { JSONRPCRequest | JSONRPCRequest[] } payload 
+ */
+function isNotNotification(payload) {
+    if (Array.isArray(payload)) return payload.some(hasId);
+    return hasId(payload);
+}
+/**
+ * @param { JSONRPCRequest } payload 
+ */
+function hasId(payload) {
+    return payload.id !== undefined;
+}
+
+/**
+ * @param { JSONRPCRequest | JSONRPCRequest[] } payload
+ * @param { any } [clientParams]  
+ */
+async function sendRequest(payload, clientParams) {
+    const response = await fetch("/api/rpc", {
+        body: JSON.stringify(payload),
+        method,
+        headers
+    });
+    if (response.status === 200) {
+        const jsonRPCResponse = await response.json();
+        return void client.receive(jsonRPCResponse);
+    }
+    if (isNotNotification(payload)) throw new Error(response.statusText);
+}
+
 /**@type { JSONRPCClient } */
-const client = new JSONRPCClient((jsonRPCRequest) =>
-    fetch("/api/rpc", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify(jsonRPCRequest)
-    }).then(function (response) {
-        if (response.status === 200) {
-            return response.json().then((jsonRPCResponse) => client.receive(jsonRPCResponse));
-        } else if (jsonRPCRequest.id !== undefined) {
-            return Promise.reject(new Error(response.statusText));
-        }
-    })
-);
+export const client = new JSONRPCClient(sendRequest);

@@ -7,6 +7,8 @@
         "@builtin/rpc": "*"
     },
     "workspaces": [
-        "builtin/*"
+        "builtin/*",
+        "be",
+        "fe"
     ]
 }

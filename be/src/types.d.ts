@@ -30,6 +30,8 @@ interface pjson {
     main?: string;
     type?: packageType
     exports?: Record<string, string | null | pjsonExportRecord>
+
+    kind?: string[];
 }
 
 interface pjsonExportRecord {

@@ -11,6 +11,7 @@ import { ignoredModules } from "./config.js";
  * @property { string[] } dependencies
  * @property { string[] } files
  * @property { Record<string, string> } importmap
+ * @property { string[] } [kind]
  * 
  * @typedef { Record<string, ModuleRecord>} Registry
  */
@@ -154,7 +155,8 @@ async function processModule(namespace, name, path, registry) {
         dependencies = {},
         exports = {},
         type = "commonjs",
-        main = "./index.js"
+        main = "./index.js",
+        kind
     } = pjson;
 
     /**@type { Record<string, string> } */
@@ -201,14 +203,15 @@ async function processModule(namespace, name, path, registry) {
         if (importmapExclude.includes(key)) continue;
         importmap[key] = importmapInclude[key];
     }
-
-    registry[name] = {
+    /**@type { ModuleRecord } */
+    const record = (registry[name] = {
         type,
         exports: /**@type {Record<string, pjsonExportRecord>} */ (exports),
         dependencies: Object.keys(dependencies),
         files,
         importmap
-    };
+    });
+    if (kind !== undefined) record.kind = kind;
 }
 
 /**

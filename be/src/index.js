@@ -3,10 +3,11 @@ import Router from "find-my-way";
 import { createServer } from "node:http"
 import { handleStaticFile, handleStaticFiles, handleStaticResource } from "./handleStaticFiles.js";
 import { assetsFolder, modulesFolder, port, workerPath } from "./config.js";
-import { documentCachePath, modulesCacheFolder, modulesCacheIndex } from "./cache.js";
+import { documentCachePath, extensionsCacheFolder, extensionsCacheIndex, modulesCacheFolder, modulesCacheIndex } from "./cache.js";
 import { NameSpace_FILE, v5 } from "./uuid/v5.js";
 import { resolve } from "node:path";
 import { handleRPC } from "@builtin/rpc/server";
+import { list as extensionsList } from "./extension.js";
 
 const router = Router({
     defaultRoute(req, res){
@@ -36,11 +37,22 @@ router.get("/api/modules", function(req, res, params, store, { name }){
     return void handleStaticResource(req, res, modulesCacheIndex, "application/json");
 });
 
+router.get("/api/extensions", function(req, res, params, store, { kind }) {
+    if (kind !== undefined) return void handleStaticResource(req, res, resolve(extensionsCacheFolder, v5(Buffer.from(kind), NameSpace_FILE)), "application/json");
+    return void handleStaticResource(req, res, extensionsCacheIndex, "application/json");
+})
+
 router.post("/api/rpc", function(req, res) {
     return void handleRPC(req, res);
-})
+});
 
 
 const server = createServer();
 server.on("request", function(req, res) { router.lookup(req, res); })
-server.listen(port);
+
+Promise.all(extensionsList.map(extension => import(`${extension}/server`))).then(function(){
+    server.listen(port);
+    console.log(port);
+}).catch(function(e) {
+    console.error(e);
+});

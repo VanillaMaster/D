@@ -3,9 +3,6 @@ import { JSONRPCServer } from "json-rpc-2.0"
 
 export const server = new JSONRPCServer();
 
-server.addMethod("echo", ({ text }) => text);
-server.addMethod("log", ({ message }) => console.log(message));
-
 /**
  * @param { ServerResponse } res 
  */

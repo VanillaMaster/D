@@ -7,7 +7,8 @@
     },
     "dependencies": {
         "@builtin/cjs": "*",
-        "@builtin/rpc": "*"
+        "@builtin/rpc": "*",
+        "@builtin/ui": "*"
     },
     "workspaces": [
         "builtin/*",

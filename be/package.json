@@ -9,7 +9,9 @@
     "files": [
         "src/**/*"
     ],
-    "scripts": {},
+    "scripts": {
+        "start": "node src/index.js"
+    },
     "dependencies": {
         "find-my-way": "^8.1.0"
     },

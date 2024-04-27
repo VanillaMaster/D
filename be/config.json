@@ -1,9 +1,23 @@
 {
-    "assets": "../fe/",
-    "modules": "../node_modules/",
-    "worker": "../fe/worker.js",
-    "cache": "./.cache/",
-    "rootpage": "../fe/index.html",
-
+    "$schema": "./schema.json",
+    "assets": {
+        "path": "../fe/"
+    },
+    "worker": {
+        "path": "../fe/worker.js"
+    },
+    "cache": {
+        "path": "./.cache/"
+    },
+    "rootpage": {
+        "path": "../fe/index.html"
+    },
+    "modules": {
+        "path": "../node_modules/",
+        "ignore": [
+            "@builtin/backend",
+            "@builtin/frontend"
+        ]
+    },
     "port": 8080
 }

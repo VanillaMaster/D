@@ -1,6 +1,7 @@
-import { lstat, readFile, readdir, readlink, open } from "node:fs/promises";
+import { lstat, readFile, readdir, readlink } from "node:fs/promises";
 import { resolve, parse, dirname } from "node:path"
 import { fileURLToPath } from "node:url"
+import { ignoredModules } from "./config.js";
 
 
 /**
@@ -81,7 +82,7 @@ export async function listModules(path) {
         withFileTypes: true
     }).catch(__array);
 
-    await Promise.all(elements.map(element => processModulesEntry(element, path, registry, true)));
+    await Promise.all(elements.map(element => processModulesEntry(element, path, registry, null)));
 
     return registry;
 }
@@ -90,53 +91,58 @@ export async function listModules(path) {
  * @param { Dirent } element 
  * @param { string } path 
  * @param { Registry } registry 
- * @param { boolean } allowNamespaces 
+ * @param { string | null } namespaces 
  */
-function processModulesEntry(element, path, registry, allowNamespaces) {
-    if (element.isDirectory()) return processModulesDirectory(element, path, registry, allowNamespaces);
-    if (element.isSymbolicLink()) return processModulesSymbolicLink(element, path, registry, allowNamespaces);
+function processModulesEntry(element, path, registry, namespaces) {
+    if (element.isDirectory()) return processModulesDirectory(element, path, registry, namespaces);
+    if (element.isSymbolicLink()) return processModulesSymbolicLink(element, path, registry, namespaces);
 }
 /**
  * @param { Dirent } element 
  * @param { string } path 
  * @param { Registry } registry 
- * @param { boolean } allowNamespaces 
+ * @param { string | null } namespaces 
  */
-async function processModulesSymbolicLink(element, path, registry, allowNamespaces) {
+async function processModulesSymbolicLink(element, path, registry, namespaces) {
     const link = await readlink(resolve(element.path, element.name));
     const stats = await lstat(resolve(element.path, link));
-    if (stats.isDirectory()) return processModulesDirectory(element, path, registry, allowNamespaces);
+    if (stats.isDirectory()) return processModulesDirectory(element, path, registry, namespaces);
 }
 /**
  * @param { Dirent } element 
  * @param { string } path 
  * @param { Registry } registry 
- * @param { boolean } allowNamespaces 
+ * @param { string | null } namespaces 
  */
-function processModulesDirectory(element, path, registry, allowNamespaces) {
+function processModulesDirectory(element, path, registry, namespaces) {
     const { name } = element
     const folder = resolve(path, name);
     if (name.startsWith("@")) {
-        if (allowNamespaces) return processNamespace(folder, registry)
-    } else return processModule(folder, registry);
+        if (namespaces === null) return processNamespace(name, folder, registry);
+    } else return processModule(namespaces, name, folder, registry);
 }
 
 /**
+ * @param { string } namespace 
  * @param { string } path 
  * @param { Registry } registry 
  */
-async function processNamespace(path, registry) {
+async function processNamespace(namespace, path, registry) {
     const elements = await readdir(path, { withFileTypes: true });
-    await Promise.all(elements.map(element => processModulesEntry(element, path, registry, false)))
+    await Promise.all(elements.map(element => processModulesEntry(element, path, registry, namespace)))
 }
 
 const EXTENSIONS = [".js", ".cjs", ".mjs", ".json"];
 
 /**
+ * @param { string | null } namespace 
+ * @param { string } name 
  * @param { string } path 
  * @param { Registry } registry 
  */
-async function processModule(path, registry) {
+async function processModule(namespace, name, path, registry) {
+    if (namespace !== null) name = `${namespace}/${name}`;
+    if (ignoredModules.includes(name)) return;
 
     const buffer = await readFile(resolve(path, "package.json")).catch(__null);
     if (buffer == null) return;
@@ -144,7 +150,7 @@ async function processModule(path, registry) {
     const pjson = JSON.parse(buffer);
 
     const {
-        name,
+        // name,
         dependencies = {},
         exports = {},
         type = "commonjs",

@@ -1,0 +1,16 @@
+{
+    "name": "@builtin/lit",
+    "version": "0.0.1",
+    "private": true,
+    "type": "module",
+    "exports": {
+        ".": null,
+        "./client": {
+            "import": "./lib/lit-core.min.js",
+            "types": "./lib/lit.d.ts"
+        }
+    },
+    "files": [
+        "lib/**/*"
+    ]
+}

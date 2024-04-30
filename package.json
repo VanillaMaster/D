@@ -8,7 +8,8 @@
     "dependencies": {
         "@builtin/cjs": "*",
         "@builtin/rpc": "*",
-        "@builtin/ui": "*"
+        "@builtin/ui": "*",
+        "@builtin/lit": "*"
     },
     "workspaces": [
         "builtin/*",

@@ -143,7 +143,8 @@ const EXTENSIONS = [".js", ".cjs", ".mjs", ".json"];
  */
 async function processModule(namespace, name, path, registry) {
     if (namespace !== null) name = `${namespace}/${name}`;
-    if (ignoredModules.includes(name)) return;
+    if (ignoredModules.some(pattern => matchPattern(pattern, name))) return;
+    // if (ignoredModules.includes(name)) return;
 
     const buffer = await readFile(resolve(path, "package.json")).catch(__null);
     if (buffer == null) return;
@@ -275,14 +276,41 @@ function handleFileExportPath(importmap, pkg, path, destination) {
  * @param { string } destination 
  */
 function handleFolderExportPath(importmap, pkg, files, path, destination) {
-    const [pLHS, pRHS] = path.split("*");
-    const trimmedPLHS = pLHS.substring(1);
+    debugger
+    const [pLHS, pRHS] = path.substring(1).split("*");
+    // const trimmedPLHS = pLHS.substring(1);
     const [dLHS, dRHS] = destination.split("*");
     const trimmedDLHS = dLHS.substring(1);
-    for (const file of files) if (file.startsWith(dLHS) && file.startsWith(dRHS)) {
+    for (const file of files) if (file.startsWith(dLHS) && file.endsWith(dRHS)) {
         const substitutions = file.substring(dLHS.length, file.length - dRHS.length);
-        const key = `${pkg}${trimmedPLHS}${substitutions}${pRHS}`;
+        const key = `${pkg}${pLHS}${substitutions}${pRHS}`;
         const value = `/modules/${pkg}${trimmedDLHS}${substitutions}${dRHS}`;
         importmap[key] = value;
     }
+}
+
+/**
+ * @param { string } pattern 
+ * @param { string } subject 
+ */
+function matchPattern(pattern, subject){
+    if (pattern.includes("*")) return matchPatternWildcard(pattern, subject);
+    else return matchPatternExact(pattern, subject)
+}
+
+/**
+ * @param { string } pattern 
+ * @param { string } subject 
+ */
+function matchPatternExact(pattern, subject) {
+    return pattern === subject;
+}
+
+/**
+ * @param { string } pattern 
+ * @param { string } subject 
+ */
+function matchPatternWildcard(pattern, subject) {
+    const [lhs, rhs] = pattern.split("*");
+    return subject.startsWith(lhs) && subject.endsWith(rhs);
 }

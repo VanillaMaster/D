@@ -11,5 +11,9 @@
     "files": [
         "src/**/*"
     ],
-    "kind": ["server", "client"]
+    "kind": ["server", "client"],
+    "disabled": false,
+    "prefetch": [
+        "src/app.xml"
+    ]
 }

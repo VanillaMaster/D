@@ -22,4 +22,10 @@ class SimpleGreeting extends LitElement {
 }
 customElements.define('simple-greeting', SimpleGreeting);
 
-document.body.append(document.createElement("simple-greeting"));
+{
+    const { pathname: path } = new URL("./app.xml", import.meta.url);
+    const res = await fetch(path);
+    const parser = new DOMParser();
+    const { children } = parser.parseFromString(await res.text(), "text/xml"); 
+    document.body.append(...children);
+}

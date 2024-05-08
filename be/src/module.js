@@ -1,8 +1,8 @@
 import { lstat, readFile, readdir, readlink } from "node:fs/promises";
-import { resolve, parse, dirname } from "node:path"
+import { resolve, parse, dirname, extname, sep } from "node:path"
 import { fileURLToPath } from "node:url"
+import { Dirent, existsSync } from "node:fs";
 import { ignoredModules } from "./config.js";
-
 
 /**
  * @typedef ModuleRecord
@@ -12,11 +12,49 @@ import { ignoredModules } from "./config.js";
  * @property { string[] } files
  * @property { Record<string, string> } importmap
  * @property { string[] } [kind]
+ * @property { string[] } [prefetch]
  * 
  * @typedef { Record<string, ModuleRecord>} Registry
+ * 
+ * @typedef { "commonjs" | "module" } packageType
+ * 
+ * @typedef pjsonExportRecord
+ * @property { string } [import]
+ * @property { string } [require]
+ * @property { string } [default]
+ * 
+ * @typedef pjson
+ * @property { string } name
+ * @property { Record<string, string> } dependencies
+ * @property { string } [main]
+ * @property { packageType } [type]
+ * @property { Record<string, string | null | pjsonExportRecord> } [exports]
+ * @property { string[] } [kind]
+ * @property { string[] } [prefetch]
  */
 
-import { Dirent, existsSync } from "node:fs";
+/**
+ * @param { string } self 
+ * @param { string } searchString 
+ * @param { number } [position] 
+ */
+function count(self, searchString, position = 0) {
+    if (searchString == "") return Infinity;
+    let i = 0;
+    while ((position = self.indexOf(searchString, position)) !== -1) {
+        position += searchString.length;
+        i++;
+    }
+    return i;
+}
+
+/**
+ * @param { any } err 
+ * @returns { never }
+ */
+function __throw(err) {
+    throw err;
+}
 /**
  * @param { string } path 
  */
@@ -144,7 +182,6 @@ const EXTENSIONS = [".js", ".cjs", ".mjs", ".json"];
 async function processModule(namespace, name, path, registry) {
     if (namespace !== null) name = `${namespace}/${name}`;
     if (ignoredModules.some(pattern => matchPattern(pattern, name))) return;
-    // if (ignoredModules.includes(name)) return;
 
     const buffer = await readFile(resolve(path, "package.json")).catch(__null);
     if (buffer == null) return;
@@ -157,6 +194,7 @@ async function processModule(namespace, name, path, registry) {
         exports = {},
         type = "commonjs",
         main = "./index.js",
+        prefetch: prefetchPatterns = [],
         kind
     } = pjson;
 
@@ -165,14 +203,19 @@ async function processModule(namespace, name, path, registry) {
     /**@type { string[] } */
     const importmapExclude = [];
 
-    const filesPrmise = readdir(path, { recursive: true });
-    const fileList = await filesPrmise;
+    const fileList = await readdir(path, { recursive: true });
+    // const fileList = await filesPrmise;
     /**@type { string[] } */
     const files = [];
-    for (const file of fileList) for (const ext of EXTENSIONS) if (file.endsWith(ext)) {
-        files.push(`./${file.replaceAll("\\", "/")}`);
-        break;
+    /**@type { string[] } */
+    const prefetch = [];
+    for (const file of fileList) {
+        const path = file.replaceAll(sep, "/");
+        if (EXTENSIONS.includes(extname(file))) files.push(`./${path}`);
+        if (prefetchPatterns.some(pattern => matchPattern(pattern, path))) prefetch.push(`/modules/${name}/${path}`);
     }
+    
+    debugger
 
     if (!("." in exports)) {
         let defaultExport = main;
@@ -184,18 +227,11 @@ async function processModule(namespace, name, path, registry) {
         const exportValue = exports[exportName];
         if (exportValue === null) {
             importmapExclude.push(exportName);
-            continue;
-        }
-        if (typeof exportValue === "object") {
+        } else if (typeof exportValue === "object") {
             handleExportRecord(importmapInclude, name, files, type, exportName, exportValue);
-            continue;
-        }
-        if (typeof exportValue === "string") {
+        } else if (typeof exportValue === "string") {
             handleExportPath(importmapInclude, name, files, exportName, exportValue);
-            continue;
-        }
-
-        throw new Error();
+        } else throw new Error();
     }
 
     /**@type { Record<string, string> } */
@@ -210,9 +246,10 @@ async function processModule(namespace, name, path, registry) {
         exports: /**@type {Record<string, pjsonExportRecord>} */ (exports),
         dependencies: Object.keys(dependencies),
         files,
-        importmap
+        importmap,
     });
     if (kind !== undefined) record.kind = kind;
+    if (prefetch.length > 0) record.prefetch = prefetch;
 }
 
 /**
@@ -224,23 +261,18 @@ async function processModule(namespace, name, path, registry) {
  * @param { pjsonExportRecord } record 
  */
 function handleExportRecord(importmap, pkg, files, type, path, record) {
-    if (type == "module") {
-        if (record.import !== undefined) {
-            return handleExportPath(importmap, pkg, files, path, record.import);
-        } else if (record.default !== undefined) {
-            return handleExportPath(importmap, pkg, files, path, record.default);
-        }
-        throw new Error();
+    /**@type { string } */
+    let destination;
+    switch (type) {
+        case "module":
+            destination = record.import ?? record.default ?? __throw(new Error());
+            break;
+        case "commonjs":
+            destination = record.require ?? record.default ?? __throw(new Error());
+            break
+        default: throw new Error();
     }
-    if (type == "commonjs") {
-        if (record.require !== undefined) {
-            return handleExportPath(importmap, pkg, files, path, record.require);
-        } else if (record.default !== undefined) {
-            return handleExportPath(importmap, pkg, files, path, record.default);
-        }
-        throw new Error();
-    }
-    throw new Error();
+    return handleExportPath(importmap, pkg, files, path, destination);
 }
 /**
  * @param { Record<string, string> } importmap 
@@ -250,10 +282,10 @@ function handleExportRecord(importmap, pkg, files, type, path, record) {
  * @param { string } destination 
  */
 function handleExportPath(importmap, pkg, files, path, destination) {
-    if (path.includes("*")) {
-        return handleFolderExportPath(importmap, pkg, files, path, destination);
-    } else {
-        return handleFileExportPath(importmap, pkg, path, destination);
+    switch (count(path, "*")) {
+        case 0: return handleFileExportPath(importmap, pkg, path, destination);
+        case 1: return handleFolderExportPath(importmap, pkg, files, path, destination);
+        default: return void console.warn(pkg, path);
     }
 }
 
@@ -276,9 +308,7 @@ function handleFileExportPath(importmap, pkg, path, destination) {
  * @param { string } destination 
  */
 function handleFolderExportPath(importmap, pkg, files, path, destination) {
-    debugger
     const [pLHS, pRHS] = path.substring(1).split("*");
-    // const trimmedPLHS = pLHS.substring(1);
     const [dLHS, dRHS] = destination.split("*");
     const trimmedDLHS = dLHS.substring(1);
     for (const file of files) if (file.startsWith(dLHS) && file.endsWith(dRHS)) {
@@ -293,9 +323,12 @@ function handleFolderExportPath(importmap, pkg, files, path, destination) {
  * @param { string } pattern 
  * @param { string } subject 
  */
-function matchPattern(pattern, subject){
-    if (pattern.includes("*")) return matchPatternWildcard(pattern, subject);
-    else return matchPatternExact(pattern, subject)
+function matchPattern(pattern, subject) {
+    switch (count(pattern, "*")) {
+        case 0: return matchPatternExact(pattern, subject)
+        case 1: return matchPatternWildcard(pattern, subject);
+        default: return void console.warn(pattern, subject);
+    }
 }
 
 /**

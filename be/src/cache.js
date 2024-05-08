@@ -2,10 +2,11 @@
 import { readFile, writeFile, mkdir } from "fs/promises";
 import { cacheFolder, modulesFolder, rootpagePath } from "./config.js";
 import { computeImportMap, listModules } from "./module.js";
-import { render } from "./template.js";
+// import { render } from "./template.js";
 import { v5, NameSpace_FILE, NameSpace_INDEX } from "./uuid/v5.js";
 import { resolve } from "node:path";
 import { listExtensions, list as extensionsList } from "./extension.js";
+import mustache from "mustache";
 
 export const modulesCacheFolder = resolve(cacheFolder, "modules");
 export const extensionsCacheFolder = resolve(cacheFolder, "extensions");
@@ -47,7 +48,14 @@ export const documentCachePath = resolve(cacheFolder, "index.html");
 async function cacheDocument(modules) {
     const template = await readFile(rootpagePath, { encoding: "utf8"});
     const importmap = JSON.stringify(computeImportMap(modules));
-    const document = render(template, { importmap });
+    /**@type { string[] } */
+    const prefetch = [];
+    for (const module in modules) {
+        const { prefetch: localPrefetch } = modules[module];
+        if (localPrefetch !== undefined) prefetch.push(...localPrefetch);
+    }
+
+    const document = mustache.render(template, { importmap, prefetch });
     await writeFile(documentCachePath, document);
 }
 
@@ -62,7 +70,7 @@ async function cacheModules(modules) {
         const path = resolve(modulesCacheFolder, name);
         tasks.push(writeFile(path, JSON.stringify(modules[module])));
     }
-    for (const task of tasks) await task;
+    await Promise.all(tasks);
 }
 
 /**
@@ -83,5 +91,5 @@ async function cacheExtensions(extensions) {
         }
         tasks.push(writeFile(path, JSON.stringify(matchingExtensions)));
     }
-    for (const task of tasks) await task;
+    await Promise.all(tasks);
 }

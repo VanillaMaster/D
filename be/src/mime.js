@@ -4,6 +4,7 @@ const MIME = {
     ".json": "application/json",
 
     ".html": "text/html",
+    ".xml": "text/xml",
 
     ".png": "image/png"
 }

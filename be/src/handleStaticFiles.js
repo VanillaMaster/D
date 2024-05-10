@@ -1,87 +1,173 @@
 /**@import { IncomingMessage, ServerResponse } from "node:http" */
-/**@import { FileHandle } from "node:fs/promises" */
-/**@import { ReadStream } from "node:fs" */
-import { open } from "node:fs/promises";
+/**@import { ReadStream, WriteStream } from "node:fs" */
 import { getMime } from "./mime.js";
 import { extname, resolve } from "node:path"
+import { pipeline } from "node:stream";
+import { createReadStream, createWriteStream } from "node:fs"
 
-/**@typedef { { [STREAM]?: ReadStream; [FILE]?: FileHandle | null; } } MetaResponse */
+/**
+ * @typedef { { [RESPONSE]: ServerResponse; [MIME]: string; } } MetaReadStream
+ * @typedef { { [RESPONSE]: ServerResponse; } } MetaWriteStream
+ */
+const MIME = Symbol("mime");
+const RESPONSE = Symbol("request");
 
-const STREAM = Symbol("stream");
-const FILE = Symbol("file");
-
-function __null() { return null; }
 /**
  * @param { ServerResponse } res 
  */
-function notFound(res) {
+export function notFound(res) {
     res.statusCode = 404;
+    res.end();
+}
+/**
+ * @param { ServerResponse } res 
+ */
+export function notAllowed(res) {
+    res.statusCode = 405;
+    res.end();
+}
+/**
+ * @param { ServerResponse } res 
+ */
+export function internalServerError(res) {
+    res.statusCode = 500;
     res.end();
 }
 
 /**
- * @this { ServerResponse<IncomingMessage> & { [STREAM]: ReadStream; [FILE]: FileHandle; } }
+ * @param { NodeJS.ErrnoException | null } err 
  */
-function onResponseClose() {
-    const { [STREAM]: stream, [FILE]: file } = this;
-    stream.close();
-    file.close();
+function readPipelineCallBack(err) {
+    if (err == null) return;
+    switch (err.code) {
+        //ignored errors
+        case "ENOENT":
+        case "ERR_STREAM_PREMATURE_CLOSE": return;
+        default: return void console.warn(err.code)
+    }
+}
+/**
+ * @param { NodeJS.ErrnoException | null } err 
+ */
+function writePipelineCallBack(err) {
+    if (err == null) return;
+    switch (err.code) {
+        //ignored errors
+        default: return void console.warn(err.code)
+    }
+}
+
+/**
+ * @this { ReadStream & MetaReadStream }
+ */
+function onReadStreamOpen() {
+    const { [RESPONSE]: response, [MIME]: mime } = this;
+    response.setHeader("Content-Type", mime);
+    response.statusCode = 200;
+}
+
+/**
+ * @this { WriteStream & MetaWriteStream }
+ */
+function onWriteStreamOpen() {
+    const { [RESPONSE]: response } = this;
+    response.statusCode = 200;
+}
+
+/**
+ * @param { NodeJS.ErrnoException } err 
+ * @this { ReadStream & MetaReadStream }
+ */
+function onReadStreamError(err) {
+    const { [RESPONSE]: response } = this;
+    switch (err.code) {
+        case "ENOENT": return void notFound(response);
+        default: return void internalServerError(response);
+    }
+}
+
+/**
+ * @param { NodeJS.ErrnoException } err 
+ * @this { WriteStream & MetaWriteStream }
+ */
+function onWriteStreamError(err) {
+    const { [RESPONSE]: response } = this;
+    switch (err.code) {
+        default: return void internalServerError(response);
+    }
+}
+
+/**
+ * @this { WriteStream & MetaWriteStream }
+ */
+function onWriteStreamClose() {
+    const { [RESPONSE]: response } = this;
+    response.end();
 }
 
 /**
  * @param { IncomingMessage } req
- * @param { ServerResponse & MetaResponse } res
+ * @param { ServerResponse } res
  * @param { { "*": string } } params
  * @param { string } root
  */
-export async function handleStaticFiles(req, res, params, root) {
+export function handleParametricFileRead(req, res, params, root) {
     const { "*": subpath } = params;
     const path = resolve(root, subpath);
-    const file = (res[FILE] = await open(path, 'r').catch(__null));
-    // const file = await open(path, 'r').catch(__null);
-    if (res.closed) return void file?.close();
-    if (file === null) return void notFound(res);
-    res.setHeader("Content-Type", getMime(extname(path)));
-    res.statusCode = 200;
-    const stream = (res[STREAM] = file.createReadStream());
-    // const stream = file.createReadStream();
-    res.on("close", onResponseClose);
-    stream.pipe(res);
+    /**@type { ReadStream & Partial<MetaReadStream> } */
+    const stream = createReadStream(path);
+    stream[RESPONSE] = res;
+    stream[MIME] = getMime(extname(path));
+    stream.on("open", onReadStreamOpen);
+    stream.on("error", onReadStreamError);
+    pipeline(stream, res, readPipelineCallBack);
 }
 
 /**
  * @param { IncomingMessage } req
- * @param { ServerResponse & MetaResponse } res
+ * @param { ServerResponse } res
  * @param { string } path
  */
-export async function handleStaticFile(req, res, path) {
-    const file = (res[FILE] = await open(path, 'r').catch(__null));
-    // const file = await open(path, 'r').catch(__null);
-    if (res.closed) return void file?.close();
-    if (file === null) return void notFound(res);
-    res.setHeader("Content-Type", getMime(extname(path)));
-    res.statusCode = 200;
-    const stream = (res[STREAM] = file.createReadStream());
-    // const stream = file.createReadStream();
-    res.on("close", onResponseClose);
-    stream.pipe(res);
+export function handleStaticFileRead(req, res, path) {
+    /**@type { ReadStream & Partial<MetaReadStream> } */
+    const stream = createReadStream(path);
+    stream[RESPONSE] = res;
+    stream[MIME] = getMime(extname(path));
+    stream.on("open", onReadStreamOpen);
+    stream.on("error", onReadStreamError);
+    pipeline(stream, res, readPipelineCallBack);
 }
 
 /**
  * @param { IncomingMessage } req
- * @param { ServerResponse & MetaResponse } res
+ * @param { ServerResponse } res
  * @param { string } path
  * @param { string } mime 
  */
-export async function handleStaticResource(req, res, path, mime) {
-    const file = (res[FILE] = await open(path, 'r').catch(__null));
-    // const file = await open(path, 'r').catch(__null);
-    if (res.closed) return void file?.close();
-    if (file === null) return void notFound(res);
-    res.setHeader("Content-Type", mime);
-    res.statusCode = 200;
-    const stream = (res[STREAM] = file.createReadStream());
-    // const stream = file.createReadStream();
-    res.on("close", onResponseClose);
-    stream.pipe(res);
+export function handleStaticRead(req, res, path, mime) {
+    /**@type { ReadStream & Partial<MetaReadStream> } */
+    const stream = createReadStream(path);
+    stream[RESPONSE] = res;
+    stream[MIME] = mime;
+    stream.on("open", onReadStreamOpen);
+    stream.on("error", onReadStreamError);
+    pipeline(stream, res, readPipelineCallBack);
+}
+
+/**
+ * @param { IncomingMessage } req
+ * @param { ServerResponse } res
+ * @param { { "*": string } } params
+ * @param { string } root
+ */
+export function handleParametricResourceWrite(req, res, params, root) {
+    const { "*": subpath } = params;
+    const path = resolve(root, subpath);
+    /**@type { WriteStream & Partial<MetaWriteStream> } */
+    const stream = createWriteStream(path);
+    stream[RESPONSE] = res;
+    stream.on("open", onWriteStreamOpen);
+    stream.on("error", onWriteStreamError);
+    stream.on("close", onWriteStreamClose);
+    pipeline(req, stream, writePipelineCallBack);
 }

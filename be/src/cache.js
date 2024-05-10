@@ -1,15 +1,18 @@
 /**@import { Registry } from "./module.js" */
 import { readFile, writeFile, mkdir } from "fs/promises";
-import { cacheFolder, modulesFolder, rootpagePath } from "./config.js";
-import { computeImportMap, listModules } from "./module.js";
-// import { render } from "./template.js";
-import { v5, NameSpace_FILE, NameSpace_INDEX } from "./uuid/v5.js";
 import { resolve } from "node:path";
-import { listExtensions, list as extensionsList } from "./extension.js";
+
 import mustache from "mustache";
+
+import { cacheFolder, modulesFolder, rootpagePath } from "./config.js";
+import { computeEditableList, computeImportMap, computePrefetchList, listModules } from "./module.js";
+import { v5, NameSpace_FILE, NameSpace_INDEX } from "./uuid/v5.js";
+import { listExtensions, list as extensionsList } from "./extension.js";
 
 export const modulesCacheFolder = resolve(cacheFolder, "modules");
 export const extensionsCacheFolder = resolve(cacheFolder, "extensions");
+/**@type { Set<string> } */
+export const editable = new Set();
 
 await Promise.all([
     mkdir(modulesCacheFolder, { recursive: true }),
@@ -26,6 +29,8 @@ export const documentCachePath = resolve(cacheFolder, "index.html");
 {
     const modules = await listModules(modulesFolder);
     const extensions = listExtensions(modules);
+
+    for (const element of computeEditableList(modules)) editable.add(element)
 
     extensionsList.push(
         ...Object.keys(extensions).filter(extension => extensions[extension].includes("server"))
@@ -48,12 +53,7 @@ export const documentCachePath = resolve(cacheFolder, "index.html");
 async function cacheDocument(modules) {
     const template = await readFile(rootpagePath, { encoding: "utf8"});
     const importmap = JSON.stringify(computeImportMap(modules));
-    /**@type { string[] } */
-    const prefetch = [];
-    for (const module in modules) {
-        const { prefetch: localPrefetch } = modules[module];
-        if (localPrefetch !== undefined) prefetch.push(...localPrefetch);
-    }
+    const prefetch = computePrefetchList(modules);
 
     const document = mustache.render(template, { importmap, prefetch });
     await writeFile(documentCachePath, document);

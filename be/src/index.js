@@ -1,9 +1,9 @@
 /**@import { IncomingMessage, ServerResponse } from "node:http" */
 import Router from "find-my-way";
 import { createServer } from "node:http"
-import { handleStaticFile, handleStaticFiles, handleStaticResource } from "./handleStaticFiles.js";
+import { handleStaticFileRead, handleParametricFileRead, handleStaticRead, handleParametricResourceWrite, internalServerError, notAllowed } from "./handleStaticFiles.js";
 import { assetsFolder, modulesFolder, port, workerPath } from "./config.js";
-import { documentCachePath, extensionsCacheFolder, extensionsCacheIndex, modulesCacheFolder, modulesCacheIndex } from "./cache.js";
+import { documentCachePath, editable, extensionsCacheFolder, extensionsCacheIndex, modulesCacheFolder, modulesCacheIndex } from "./cache.js";
 import { NameSpace_FILE, v5 } from "./uuid/v5.js";
 import { resolve } from "node:path";
 import { handleRPC } from "@builtin/rpc/server";
@@ -17,29 +17,33 @@ const router = Router({
 });
 
 router.get("/", function(req, res) {
-    handleStaticFile(req, res, documentCachePath);
+    handleStaticFileRead(req, res, documentCachePath);
 });
 
 router.get("/modules/*", function(req, res, params){
-    handleStaticFiles(req, res, /**@type { { "*": string } } */ (params), modulesFolder);
+    handleParametricFileRead(req, res, /**@type { { "*": string } } */ (params), modulesFolder);
+})
+router.put("/modules/*", function(req, res, params) {
+    if (!editable.has(/**@type { string } */(req.url))) return void notAllowed(res);
+    return void handleParametricResourceWrite(req, res, /**@type { { "*": string } } */ (params), modulesFolder);
 })
 
 router.get("/assets/*", function(req, res, params){
-    handleStaticFiles(req, res, /**@type { { "*": string } } */ (params), assetsFolder);
+    handleParametricFileRead(req, res, /**@type { { "*": string } } */ (params), assetsFolder);
 })
 
 router.get("/worker", function(req, res){
-    handleStaticFile(req, res, workerPath);
+    handleStaticFileRead(req, res, workerPath);
 });
 
 router.get("/api/modules", function(req, res, params, store, { name }){
-    if (name !== undefined) return void handleStaticResource(req, res, resolve(modulesCacheFolder, v5(Buffer.from(name), NameSpace_FILE)), "application/json");
-    return void handleStaticResource(req, res, modulesCacheIndex, "application/json");
+    if (name !== undefined) return void handleStaticRead(req, res, resolve(modulesCacheFolder, v5(Buffer.from(name), NameSpace_FILE)), "application/json");
+    return void handleStaticRead(req, res, modulesCacheIndex, "application/json");
 });
 
 router.get("/api/extensions", function(req, res, params, store, { kind }) {
-    if (kind !== undefined) return void handleStaticResource(req, res, resolve(extensionsCacheFolder, v5(Buffer.from(kind), NameSpace_FILE)), "application/json");
-    return void handleStaticResource(req, res, extensionsCacheIndex, "application/json");
+    if (kind !== undefined) return void handleStaticRead(req, res, resolve(extensionsCacheFolder, v5(Buffer.from(kind), NameSpace_FILE)), "application/json");
+    return void handleStaticRead(req, res, extensionsCacheIndex, "application/json");
 })
 
 router.post("/api/rpc", function(req, res) {

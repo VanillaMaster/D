@@ -1,5 +1,5 @@
 import { lstat, readFile, readdir, readlink } from "node:fs/promises";
-import { resolve, parse, dirname, extname, sep } from "node:path"
+import { resolve, parse, dirname, extname, sep, normalize, join } from "node:path"
 import { fileURLToPath } from "node:url"
 import { Dirent, existsSync } from "node:fs";
 import { ignoredModules } from "./config.js";
@@ -13,6 +13,7 @@ import { ignoredModules } from "./config.js";
  * @property { Record<string, string> } importmap
  * @property { string[] } [kind]
  * @property { string[] } [prefetch]
+ * @property { string[] } [editable]
  * 
  * @typedef { Record<string, ModuleRecord>} Registry
  * 
@@ -31,6 +32,7 @@ import { ignoredModules } from "./config.js";
  * @property { Record<string, string | null | pjsonExportRecord> } [exports]
  * @property { string[] } [kind]
  * @property { string[] } [prefetch]
+ * @property { string[] } [editable]
  */
 
 /**
@@ -103,11 +105,33 @@ export function computeImportMap(modules) {
             importmap.imports[key] = `${value}?${params}`;
         } else Object.assign(importmap.imports, record.importmap);
     }
-    // Object.assign(
-    //     importmap.imports,
-    //     ...Object.values(modules).map(m => m.importmap)
-    // );
     return importmap;
+}
+
+/**
+ * @param { Record<string, ModuleRecord> } modules 
+ */
+export function computeEditableList(modules) {
+    /**@type { string[] } */
+    const editable = [];
+    for (const module in modules) {
+        const { editable: localEditable } = modules[module];
+        if (localEditable !== undefined) editable.push(...localEditable);
+    }
+    return editable;
+}
+
+/**
+ * @param { Record<string, ModuleRecord> } modules 
+ */
+export function computePrefetchList(modules) {
+    /**@type { string[] } */
+    const prefetch = [];
+    for (const module in modules) {
+        const { prefetch: localPrefetch } = modules[module];
+        if (localPrefetch !== undefined) prefetch.push(...localPrefetch);
+    }
+    return prefetch;
 }
 
 /**
@@ -189,14 +213,21 @@ async function processModule(namespace, name, path, registry) {
     const pjson = JSON.parse(buffer);
 
     const {
-        // name,
         dependencies = {},
         exports = {},
         type = "commonjs",
-        main = "./index.js",
+        main = "index.js",
         prefetch: prefetchPatterns = [],
+        editable: editablePatterns = [],
         kind
     } = pjson;
+
+    for (let i = 0; i < prefetchPatterns.length; i++) {
+        prefetchPatterns[i] = normalize(prefetchPatterns[i]).replaceAll(sep, "/");
+    }
+    for (let i = 0; i < editablePatterns.length; i++) {
+        editablePatterns[i] = normalize(editablePatterns[i]).replaceAll(sep, "/");
+    }
 
     /**@type { Record<string, string> } */
     const importmapInclude = {};
@@ -209,28 +240,28 @@ async function processModule(namespace, name, path, registry) {
     const files = [];
     /**@type { string[] } */
     const prefetch = [];
+    /**@type { string[] } */
+    const editable = [];
     for (const file of fileList) {
         const path = file.replaceAll(sep, "/");
-        if (EXTENSIONS.includes(extname(file))) files.push(`./${path}`);
+        if (EXTENSIONS.includes(extname(file))) files.push(path);
         if (prefetchPatterns.some(pattern => matchPattern(pattern, path))) prefetch.push(`/modules/${name}/${path}`);
+        if (editablePatterns.some(pattern => matchPattern(pattern, path))) editable.push(`/modules/${name}/${path}`);
     }
-    
-    debugger
 
-    if (!("." in exports)) {
-        let defaultExport = main;
-        if (!main.startsWith("./")) defaultExport = `./${defaultExport}`;
-        exports["."] = defaultExport;
-    }
+    exports["."] ??= main;
 
     for (const exportName in exports) {
+        const normalizedName = normalize(exportName).replaceAll(sep, "/");
         const exportValue = exports[exportName];
+
         if (exportValue === null) {
             importmapExclude.push(exportName);
         } else if (typeof exportValue === "object") {
-            handleExportRecord(importmapInclude, name, files, type, exportName, exportValue);
+            handleExportRecord(importmapInclude, name, files, type, normalizedName, exportValue);
         } else if (typeof exportValue === "string") {
-            handleExportPath(importmapInclude, name, files, exportName, exportValue);
+            const normalizedValue = normalize(exportValue).replaceAll(sep, "/");
+            handleExportPath(importmapInclude, name, files, normalizedName, normalizedValue);
         } else throw new Error();
     }
 
@@ -250,6 +281,7 @@ async function processModule(namespace, name, path, registry) {
     });
     if (kind !== undefined) record.kind = kind;
     if (prefetch.length > 0) record.prefetch = prefetch;
+    if (editable.length > 0) record.editable = editable;
 }
 
 /**
@@ -272,7 +304,8 @@ function handleExportRecord(importmap, pkg, files, type, path, record) {
             break
         default: throw new Error();
     }
-    return handleExportPath(importmap, pkg, files, path, destination);
+    const normalizedDestination = normalize(destination).replaceAll(sep, "/");
+    return handleExportPath(importmap, pkg, files, path, normalizedDestination);
 }
 /**
  * @param { Record<string, string> } importmap 
@@ -282,9 +315,11 @@ function handleExportRecord(importmap, pkg, files, type, path, record) {
  * @param { string } destination 
  */
 function handleExportPath(importmap, pkg, files, path, destination) {
-    switch (count(path, "*")) {
+    const p = count(path, "*"), d = count(destination, "*");
+    if (p !== d) return void console.warn(pkg, path);
+    switch (p + d) {
         case 0: return handleFileExportPath(importmap, pkg, path, destination);
-        case 1: return handleFolderExportPath(importmap, pkg, files, path, destination);
+        case 2: return handleFolderExportPath(importmap, pkg, files, path, destination);
         default: return void console.warn(pkg, path);
     }
 }
@@ -296,8 +331,8 @@ function handleExportPath(importmap, pkg, files, path, destination) {
  * @param { string } destination 
  */
 function handleFileExportPath(importmap, pkg, path, destination) {
-    const key = pkg + path.substring(1);
-    const value = `/modules/${pkg}${destination.substring(1)}`;
+    const key = join(pkg, path).replaceAll(sep, "/");
+    const value = join("/modules", pkg, destination).replaceAll(sep, "/");
     importmap[key] = value;
 }
 /**
@@ -308,13 +343,12 @@ function handleFileExportPath(importmap, pkg, path, destination) {
  * @param { string } destination 
  */
 function handleFolderExportPath(importmap, pkg, files, path, destination) {
-    const [pLHS, pRHS] = path.substring(1).split("*");
+    const [pLHS, pRHS] = path.split("*");
     const [dLHS, dRHS] = destination.split("*");
-    const trimmedDLHS = dLHS.substring(1);
     for (const file of files) if (file.startsWith(dLHS) && file.endsWith(dRHS)) {
         const substitutions = file.substring(dLHS.length, file.length - dRHS.length);
-        const key = `${pkg}${pLHS}${substitutions}${pRHS}`;
-        const value = `/modules/${pkg}${trimmedDLHS}${substitutions}${dRHS}`;
+        const key = join(pkg, pLHS, substitutions, pRHS).replaceAll(sep, "/");
+        const value = join("/modules", pkg, dLHS, substitutions, dRHS).replaceAll(sep, "/");
         importmap[key] = value;
     }
 }

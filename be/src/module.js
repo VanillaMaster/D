@@ -14,6 +14,7 @@ import { ignoredModules } from "./config.js";
  * @property { string[] } [kind]
  * @property { string[] } [prefetch]
  * @property { string[] } [editable]
+ * @property { string[] } [stylesheet]
  * 
  * @typedef { Record<string, ModuleRecord>} Registry
  * 
@@ -33,6 +34,7 @@ import { ignoredModules } from "./config.js";
  * @property { string[] } [kind]
  * @property { string[] } [prefetch]
  * @property { string[] } [editable]
+ * @property { string[] } [stylesheet]
  */
 
 /**
@@ -119,6 +121,19 @@ export function computeEditableList(modules) {
         if (localEditable !== undefined) editable.push(...localEditable);
     }
     return editable;
+}
+
+/**
+ * @param { Record<string, ModuleRecord> } modules 
+ */
+export function computeStylesheetList(modules) {
+    /**@type { string[] } */
+    const stylesheet = [];
+    for (const module in modules) {
+        const { stylesheet: localStylesheet } = modules[module];
+        if (localStylesheet !== undefined) stylesheet.push(...localStylesheet);
+    }
+    return stylesheet;
 }
 
 /**
@@ -219,6 +234,7 @@ async function processModule(namespace, name, path, registry) {
         main = "index.js",
         prefetch: prefetchPatterns = [],
         editable: editablePatterns = [],
+        stylesheet: stylesheetPatterns = [],
         kind
     } = pjson;
 
@@ -227,6 +243,9 @@ async function processModule(namespace, name, path, registry) {
     }
     for (let i = 0; i < editablePatterns.length; i++) {
         editablePatterns[i] = normalize(editablePatterns[i]).replaceAll(sep, "/");
+    }
+    for (let i = 0; i < stylesheetPatterns.length; i++) {
+        stylesheetPatterns[i] = normalize(stylesheetPatterns[i]).replaceAll(sep, "/");
     }
 
     /**@type { Record<string, string> } */
@@ -242,11 +261,15 @@ async function processModule(namespace, name, path, registry) {
     const prefetch = [];
     /**@type { string[] } */
     const editable = [];
+    /**@type { string[] } */
+    const stylesheet = [];
+
     for (const file of fileList) {
         const path = file.replaceAll(sep, "/");
         if (EXTENSIONS.includes(extname(file))) files.push(path);
         if (prefetchPatterns.some(pattern => matchPattern(pattern, path))) prefetch.push(`/modules/${name}/${path}`);
         if (editablePatterns.some(pattern => matchPattern(pattern, path))) editable.push(`/modules/${name}/${path}`);
+        if (stylesheetPatterns.some(pattern => matchPattern(pattern, path))) stylesheet.push(`/modules/${name}/${path}`);
     }
 
     exports["."] ??= main;
@@ -282,6 +305,7 @@ async function processModule(namespace, name, path, registry) {
     if (kind !== undefined) record.kind = kind;
     if (prefetch.length > 0) record.prefetch = prefetch;
     if (editable.length > 0) record.editable = editable;
+    if (stylesheet.length > 0) record.stylesheet = stylesheet;
 }
 
 /**

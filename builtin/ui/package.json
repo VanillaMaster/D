@@ -9,11 +9,19 @@
         "./client": "./src/client.js"
     },
     "files": [
-        "src/**/*"
+        "src/**/*",
+        "default/**/*",
+        "editable/**/*"
     ],
     "kind": ["server", "client"],
     "disabled": false,
     "prefetch": [
-        "src/app.xml"
+        "src/*.html"
+    ],
+    "editable": [
+        "src/*.html"
+    ],
+    "stylesheet": [
+        "src/*.css"
     ]
 }

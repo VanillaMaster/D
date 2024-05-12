@@ -6,7 +6,9 @@ const MIME = {
     ".html": "text/html",
     ".xml": "text/xml",
 
-    ".png": "image/png"
+    ".png": "image/png",
+
+    ".css": "text/css"
 }
 
 const DEFAULT = "application/octet-stream";

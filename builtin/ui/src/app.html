@@ -1,0 +1,31 @@
+<builtin-app>
+    <builtin-sidebar id="sidebar" slot="overlay">
+        <div style="width: 10em; height: 100%; padding: 1em; background-color: wheat;">
+            <div style="display: flex; flex-direction: column;">
+                <button>asd</button>
+                <button>asd</button>
+                <button>asd</button>
+                <button>asd</button>
+                <button>asd</button>
+                <button>asd</button>
+                <button>asd</button>
+            </div>
+        </div>
+    </builtin-sidebar>
+    <div style="background-color: wheat; height: 64px; padding: 0 16px; box-sizing: border-box; display: flex; align-items: center; gap: 16px;" slot="header">
+        <button onclick="sidebar.toggle()" style="all: unset; line-height: 0; height: 48px; width: 48px; margin: -12px; display: grid; justify-items: center; align-items: center;">
+            <svg height="24px" width="24px"><use href="#icon-menu"></use></svg>
+        </button>
+        <h1 style="font-size: 22pt; line-height: 28pt;margin: 0; font-family: sans-serif; font-weight: 400;">
+            Something
+        </h1>
+    </div>
+    <div style="height: 200vh;">
+        Lorem ipsum, dolor sit amet consectetur adipisicing elit. Rem recusandae in dolorem vel dicta, accusamus molestiae qui. Sequi eius, ullam ut est earum, asperiores, culpa soluta accusamus possimus nemo architecto!
+    </div>
+    <div slot="footer">asd</div>
+</builtin-app>
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+    <symbol id="icon-menu" viewBox="0 -960 960 960" fill="black"><path d="M120-240v-80h720v80H120Zm0-200v-80h720v80H120Zm0-200v-80h720v80H120Z"/></symbol>
+</svg>

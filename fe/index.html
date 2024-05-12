@@ -1,20 +1,18 @@
 <!DOCTYPE html>
-<html lang="en" style="height: 100%; width: 100%; overscroll-behavior-y: none; overflow-y: scroll;">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-    <link rel="manifest" href="/assets/manifest.json">
-    {{#prefetch}}
-    <link rel="prefetch" href="{{{.}}}">
-    {{/prefetch}}
-    <script type="importmap">{{{ importmap }}}</script>
-    <script type="module" src="/assets/src/app.js"></script>
-</head>
-<body style="margin: 0; padding: 0; min-height: 100%; min-width: 100%;height: 200dvh;">
-    <div style="height: 100dvh; display: grid; justify-items: center; align-items: center;">
-        <img src="/assets/placeholder.png" style="max-width: 100%; max-height: 100vh;padding: 1em; box-sizing: border-box;">
-    </div>
-    <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Harum consequuntur accusantium impedit. Ab voluptatum facilis repellat quibusdam vel at obcaecati ea cumque, consequuntur nostrum nemo totam quasi reiciendis? Molestiae, reiciendis!</p>
-</body>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Document</title>
+        <link rel="manifest" href="/assets/manifest.json">
+        {{#prefetch}}
+        <link rel="prefetch" href="{{{.}}}">
+        {{/prefetch}}
+        {{#stylesheet}}
+        <link rel="stylesheet" href="{{{.}}}">
+        {{/stylesheet}}
+        <script type="importmap">{{{ importmap }}}</script>
+        <script type="module" src="/assets/src/app.js"></script>
+    </head>
+    <body></body>
 </html>

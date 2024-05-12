@@ -5,7 +5,7 @@ import { resolve } from "node:path";
 import mustache from "mustache";
 
 import { cacheFolder, modulesFolder, rootpagePath } from "./config.js";
-import { computeEditableList, computeImportMap, computePrefetchList, listModules } from "./module.js";
+import { computeEditableList, computeImportMap, computePrefetchList, computeStylesheetList, listModules } from "./module.js";
 import { v5, NameSpace_FILE, NameSpace_INDEX } from "./uuid/v5.js";
 import { listExtensions, list as extensionsList } from "./extension.js";
 
@@ -54,8 +54,9 @@ async function cacheDocument(modules) {
     const template = await readFile(rootpagePath, { encoding: "utf8"});
     const importmap = JSON.stringify(computeImportMap(modules));
     const prefetch = computePrefetchList(modules);
+    const stylesheet = computeStylesheetList(modules);
 
-    const document = mustache.render(template, { importmap, prefetch });
+    const document = mustache.render(template, { importmap, prefetch, stylesheet });
     await writeFile(documentCachePath, document);
 }
 

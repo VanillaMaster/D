@@ -1,16 +1,16 @@
 <builtin-app>
     <builtin-sidebar id="sidebar" slot="overlay">
-        <div style="width: 10em; height: 100%; padding: 1em; background-color: wheat;">
-            <div style="display: flex; flex-direction: column;">
-                <button>asd</button>
-                <button>asd</button>
-                <button>asd</button>
-                <button>asd</button>
-                <button>asd</button>
-                <button>asd</button>
-                <button>asd</button>
-            </div>
-        </div>
+        <builtin-sidebar-list style="width: 15em; height: 100%; padding: 1em; background-color: wheat;">
+            <builtin-sidebar-item active>
+                <span slot="label">asd</span>
+            </builtin-sidebar-item>
+            <builtin-sidebar-item>
+                <span slot="label">qwe</span>
+            </builtin-sidebar-item>
+            <builtin-sidebar-item>
+                <span slot="label">zxc</span>
+            </builtin-sidebar-item>
+        </builtin-sidebar-list>
     </builtin-sidebar>
     <div style="background-color: wheat; height: 64px; padding: 0 16px; box-sizing: border-box; display: flex; align-items: center; gap: 16px;" slot="header">
         <button onclick="sidebar.toggle()" style="all: unset; line-height: 0; height: 48px; width: 48px; margin: -12px; display: grid; justify-items: center; align-items: center;">

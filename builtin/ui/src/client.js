@@ -22,7 +22,7 @@ await (async function() {
 })();
 
 import { parser as Parser } from "sax";
-import { encode } from "@builtin/compression/URLSafeBase64";
+import { fetch as fetchProxt } from "@builtin/proxy/client"
 
 (async function() {
     const parser = Parser(true);
@@ -32,15 +32,8 @@ import { encode } from "@builtin/compression/URLSafeBase64";
 
         }
     }
-
-    const encoder = new TextEncoder();
-    const buffer = encoder.encode("https://habr.com/ru/rss/articles/?fl=ru");
-    const encoded = encode(buffer);
-    const url = new URL("/api/proxy", location.origin);
-    url.searchParams.set("url", encoded);
-    const response = await fetch(url);
+    const response = await fetchProxt("https://habr.com/ru/rss/articles/?fl=ru");
     if (response.body == null) throw new Error(); 
-    
     const reader = response.body.pipeThrough(/*new DecompressionStream("gzip")).pipeThrough(*/new TextDecoderStream("utf-8")).pipeTo(new WritableStream({
         write(chunk) {
             // console.log(chunk);

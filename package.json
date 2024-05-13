@@ -12,6 +12,7 @@
         "@builtin/rpc": "*",
         "@builtin/ui": "*",
         "@builtin/compression": "*",
+        "@builtin/proxy": "*",
         "sax": "github:isaacs/sax-js"
     },
     "workspaces": [

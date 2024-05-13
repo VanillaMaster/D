@@ -1,4 +1,3 @@
-/**@import { Registry } from "./module.js" */
 import { readFile, writeFile, mkdir } from "fs/promises";
 import { resolve } from "node:path";
 

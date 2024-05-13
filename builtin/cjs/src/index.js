@@ -1,6 +1,7 @@
 import { JsModule, EXECUTOR, NAMED_EXPORT } from "./JsModule.js";
 import { JsonModule } from "./JsonModule.js";
-import { loadedPackages, modulesCache, packagesCache} from "./cache.js"
+import { loadedPackages, pendingPackages, modulesCache, packagesCache} from "./cache.js"
+import { join } from "./path.js";
 /**@import { Module } from "./Module.js" */
 /**@import { CJSRequire, CJSExecutor } from "./JsModule.js" */
 
@@ -17,31 +18,48 @@ function __throw(error) { throw error; }
 /**
  * @param { string } pkg
  */
-export async function preloadCjsPackage(pkg) {
-    if (loadedPackages.has(pkg)) return;
-
+async function preloadCjsPackage(pkg) {
     const url = new URL("/api/modules", document.location.origin);
     url.searchParams.append("name", pkg);
-    /**@type { { files: string[], dependencies: string[], importmap: Record<string, string> } } */
+    /**@type { ModuleRecord } */
     const data = await fetch(url).then(toJson);
 
-    const { files, dependencies, importmap } = data;
-
-    // const dependenciesPromise = Promise.all(dependencies.map(__import));
-
+    const { files, dependencies, exports } = data;
     for (let i = 0; i < files.length; i++) {
-        ({ pathname: files[i] } = new URL(files[i], `${document.location.origin}/modules/${pkg}/`));
+        files[i] = join("/modules", pkg, files[i]);
     }
 
     await Promise.all(files.map(fetchModule));
 
-    for (const specifier in importmap) {
-        const pathname = importmap[specifier];
+    for (const entry in exports) {
+        const specifier = join(pkg, entry)
+        const pathname = join("/modules", pkg, exports[entry]);
         packagesCache.set(specifier, /**@type { Module } */ (modulesCache.get(pathname)));
     }
-
-    loadedPackages.add(pkg);
 }
+
+/**
+ * @param { string } pkg
+ * @returns { Promise<void> }
+ */
+function preloadCjsPackage$1(pkg) {
+    if (loadedPackages.has(pkg)) return Promise.resolve();
+    const pending = pendingPackages.get(pkg);
+    if (pending !== undefined) return pending;
+    const promise = preloadCjsPackage$2(pkg);
+    pendingPackages.set(pkg, promise);
+    return promise;
+}
+/**
+ * @param { string } pkg
+ */
+async function preloadCjsPackage$2(pkg) {
+    await preloadCjsPackage(pkg);
+    loadedPackages.add(pkg);
+    pendingPackages.delete(pkg);
+}
+
+export { preloadCjsPackage$1 as preloadCjsPackage }
 
 /**
  * @param { string } file
@@ -82,28 +100,6 @@ async function fetchJsonModule(filename, response) {
     const module = new JsonModule(filename, filename, data);
     modulesCache.set(filename, module);
     return module;
-}
-
-/**
- * @param { string } specifier 
- */
-function getPackageName(specifier) {
-    const i = specifier.indexOf("/");
-    if (i == -1) return specifier;
-    return specifier.substring(0, i);
-}
-/**
- * @param { string } specifier 
- */
-export async function listExportedNames(specifier) {
-    const pkg = getPackageName(specifier);
-    await preloadCjsPackage(pkg);
-
-    const exports = globalRequire(specifier);
-    /**@type { string[] } */
-    const exportedNames = [];
-    if (exports[NAMED_EXPORT] === true) for (const name in exports) if (name !== "default") exportedNames.push(name);
-    return exportedNames;
 }
 
 /**
@@ -185,4 +181,38 @@ function createLocalRequire(parent) {
     return function(specifier) {
         return globalRequire(specifier) ?? relativeRequire(specifier, parent) ?? __throw(new Error(`Cannot find module '${specifier}'`));
     }
+}
+
+/**
+ * @param { string } pkg 
+ * @param { string } entry 
+ */
+export async function prepareModuleWrapper(pkg, entry) {
+    await preloadCjsPackage$1(pkg);
+
+    const exports = globalRequire(pkg);
+    /**@type { string[] } */
+    const exportedNames = [];
+    if (exports[NAMED_EXPORT] === true) for (const name in exports) if (name !== "default") exportedNames.push(name);
+    const specifier = join(pkg, entry)
+    return constructModuleWrapper(specifier, exportedNames);
+}
+
+/**
+ * @param { string } specifier 
+ * @param { string[] } exportedNames 
+ */
+function constructModuleWrapper(specifier, exportedNames) {
+    /**@type { string[] } */
+    const buffer = [
+        `import { globalRequire } from "@builtin/cjs/client";`,
+        `const module = globalRequire(${JSON.stringify(specifier)});`,
+        `export default module;`
+    ];
+    if (exportedNames.length > 0) {
+        buffer.push(`export const {`);
+        buffer.push(exportedNames.map(name => `    ${name}`).join(",\n"))
+        buffer.push(`} = module;`)
+    }
+    return buffer.join("\n");
 }

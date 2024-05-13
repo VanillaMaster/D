@@ -11,7 +11,8 @@
         "noImplicitAny": true,
 
         "types": [
-            "node"
+            "node",
+            "backend"
         ]
 
         // "outDir": "types",

@@ -16,7 +16,8 @@
         "path": "../node_modules/",
         "ignore": [
             "@builtin/backend",
-            "@builtin/frontend"
+            "@builtin/frontend",
+            "@types/*"
         ]
     },
     "port": 8080

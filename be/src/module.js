@@ -5,39 +5,6 @@ import { Dirent, existsSync } from "node:fs";
 import { ignoredModules } from "./config.js";
 
 /**
- * @typedef ModuleRecord
- * @property { "commonjs" | "module" } type
- * @property { Record<string, pjsonExportRecord> } exports
- * @property { string[] } dependencies
- * @property { string[] } files
- * @property { Record<string, string> } importmap
- * @property { string[] } [kind]
- * @property { string[] } [prefetch]
- * @property { string[] } [editable]
- * @property { string[] } [stylesheet]
- * 
- * @typedef { Record<string, ModuleRecord>} Registry
- * 
- * @typedef { "commonjs" | "module" } packageType
- * 
- * @typedef pjsonExportRecord
- * @property { string } [import]
- * @property { string } [require]
- * @property { string } [default]
- * 
- * @typedef pjson
- * @property { string } name
- * @property { Record<string, string> } dependencies
- * @property { string } [main]
- * @property { packageType } [type]
- * @property { Record<string, string | null | pjsonExportRecord> } [exports]
- * @property { string[] } [kind]
- * @property { string[] } [prefetch]
- * @property { string[] } [editable]
- * @property { string[] } [stylesheet]
- */
-
-/**
  * @param { string } self 
  * @param { string } searchString 
  * @param { number } [position] 
@@ -81,12 +48,39 @@ export function getModuleRoot(entry) {
     throw new Error();
 }
 
-
 /**
  * @returns { never[] }
  */
 function __array() { return []; }
 function __null() { return null; }
+
+/**
+ * @param { PjsonExportRecord | PjsonExportMap } exports
+ * @param { boolean } hasKeysWithDot 
+ * @returns { exports is PjsonExportRecord }
+ */
+function isPjsonExportRecord(exports, hasKeysWithDot) {
+    return !hasKeysWithDot;
+}
+
+/**
+ * @param { PjsonExportRecord | PjsonExportMap } exports
+ * @param { boolean } hasKeysWithoutDot 
+ * @returns { exports is PjsonExportMap }
+ */
+function isPjsonExportMap(exports, hasKeysWithoutDot) {
+    return !hasKeysWithoutDot
+}
+
+/**
+ * @param { PjsonExportRecord | PjsonExportMap } exports
+ * @param { boolean } hasKeysWithDot 
+ * @param { boolean } hasKeysWithoutDot 
+ * @returns { exports is PjsonExportMap }
+ */
+function isEmptyPjsonExportMap(exports, hasKeysWithDot, hasKeysWithoutDot) {
+    return !(hasKeysWithDot || hasKeysWithoutDot);
+}
 
 /**
  * @param { Record<string, ModuleRecord> } modules 
@@ -96,16 +90,22 @@ export function computeImportMap(modules) {
         /**@type { Record<string, string> } */
         imports: {}
     }
-    for (const module in modules) {
-        const record = modules[module];
-        if (record.type == "commonjs") for (const key in record.importmap) {
-            const value = record.importmap[key];
+    for (const pkg in modules) {
+        const { exports, type } = modules[pkg];
+        if (type == "commonjs") for (const entry in exports) {
+            const path = exports[entry];
             const params = new URLSearchParams();
             params.append("sw", "intercept");
             params.append("type", "cjs");
-            params.append("specifier", key);
-            importmap.imports[key] = `${value}?${params}`;
-        } else Object.assign(importmap.imports, record.importmap);
+            params.append("pkg", pkg);
+            params.append("entry", entry)
+            importmap.imports[join(pkg, entry).replaceAll(sep, "/")] = join("/modules", pkg, path).replaceAll(sep, "/") + "?" + params.toString();
+        } else if (type == "module") {
+            for (const entry in exports) {
+                const path = exports[entry];
+                importmap.imports[join(pkg, entry).replaceAll(sep, "/")] = join("/modules", pkg, path).replaceAll(sep, "/")
+            }
+        }
     }
     return importmap;
 }
@@ -224,7 +224,7 @@ async function processModule(namespace, name, path, registry) {
 
     const buffer = await readFile(resolve(path, "package.json")).catch(__null);
     if (buffer == null) return;
-    /**@type { pjson } */
+    /**@type { Pjson } */
     const pjson = JSON.parse(buffer);
 
     const {
@@ -249,9 +249,9 @@ async function processModule(namespace, name, path, registry) {
     }
 
     /**@type { Record<string, string> } */
-    const importmapInclude = {};
+    const exportsMapInclude = {};
     /**@type { string[] } */
-    const importmapExclude = [];
+    const exportsMapExclude = [];
 
     const fileList = await readdir(path, { recursive: true });
     // const fileList = await filesPrmise;
@@ -272,35 +272,41 @@ async function processModule(namespace, name, path, registry) {
         if (stylesheetPatterns.some(pattern => matchPattern(pattern, path))) stylesheet.push(`/modules/${name}/${path}`);
     }
 
-    exports["."] ??= main;
+    if (typeof exports == "object") {
+        let hasKeysWithDot = false, hasKeysWithoutDot = false;
+        for (const key in exports) {
+            const keyStartsWithDot = key.startsWith(".");
+            hasKeysWithDot ||= keyStartsWithDot;
+            hasKeysWithoutDot ||= !keyStartsWithDot;
+        }
 
-    for (const exportName in exports) {
-        const normalizedName = normalize(exportName).replaceAll(sep, "/");
-        const exportValue = exports[exportName];
-
-        if (exportValue === null) {
-            importmapExclude.push(exportName);
-        } else if (typeof exportValue === "object") {
-            handleExportRecord(importmapInclude, name, files, type, normalizedName, exportValue);
-        } else if (typeof exportValue === "string") {
-            const normalizedValue = normalize(exportValue).replaceAll(sep, "/");
-            handleExportPath(importmapInclude, name, files, normalizedName, normalizedValue);
-        } else throw new Error();
-    }
+        switch (true) {
+            case isEmptyPjsonExportMap(exports, hasKeysWithDot, hasKeysWithoutDot):
+                exports["."] = main;
+            case isPjsonExportMap(exports, hasKeysWithoutDot):
+                handleExportMap(exportsMapInclude, exportsMapExclude, name, files, type, exports)
+                break;
+            case isPjsonExportRecord(exports, hasKeysWithDot):
+                handleExportRecord(exportsMapInclude, name, files, type, ".", exports);
+                break;
+            default: throw new Error();
+        }
+    } else if (typeof exports == "string") {
+        handleExportPath(exportsMapInclude, name, files, ".", exports);
+    } else throw new Error();
 
     /**@type { Record<string, string> } */
-    const importmap = {};
-    for (const key in importmapInclude) {
-        if (importmapExclude.includes(key)) continue;
-        importmap[key] = importmapInclude[key];
+    const exportmap = {};
+    for (const key in exportsMapInclude) {
+        if (exportsMapExclude.includes(key)) continue;
+        exportmap[key] = exportsMapInclude[key];
     }
     /**@type { ModuleRecord } */
     const record = (registry[name] = {
         type,
-        exports: /**@type {Record<string, pjsonExportRecord>} */ (exports),
+        exports: exportmap,
         dependencies: Object.keys(dependencies),
         files,
-        importmap,
     });
     if (kind !== undefined) record.kind = kind;
     if (prefetch.length > 0) record.prefetch = prefetch;
@@ -309,12 +315,36 @@ async function processModule(namespace, name, path, registry) {
 }
 
 /**
+ * @param { Record<string, string> } importmapInclude
+ * @param { string[] } importmapExclude  
+ * @param { string } pkg 
+ * @param { string [] } files 
+ * @param { PackageType } type 
+ * @param { PjsonExportMap} map 
+ */
+function handleExportMap(importmapInclude, importmapExclude, pkg, files, type, map) {
+    for (const exportName in map) {
+        const normalizedName = normalize(exportName).replaceAll(sep, "/");
+        const exportValue = map[exportName];
+
+        if (exportValue === null) {
+            importmapExclude.push(exportName);
+        } else if (typeof exportValue === "object") {
+            handleExportRecord(importmapInclude, pkg, files, type, normalizedName, exportValue);
+        } else if (typeof exportValue === "string") {
+            const normalizedValue = normalize(exportValue).replaceAll(sep, "/");
+            handleExportPath(importmapInclude, pkg, files, normalizedName, normalizedValue);
+        } else throw new Error();
+    }
+}
+
+/**
  * @param { Record<string, string> } importmap 
  * @param { string } pkg 
  * @param { string [] } files 
- * @param { packageType } type 
+ * @param { PackageType } type 
  * @param { string } path 
- * @param { pjsonExportRecord } record 
+ * @param { PjsonExportRecord } record 
  */
 function handleExportRecord(importmap, pkg, files, type, path, record) {
     /**@type { string } */
@@ -355,8 +385,8 @@ function handleExportPath(importmap, pkg, files, path, destination) {
  * @param { string } destination 
  */
 function handleFileExportPath(importmap, pkg, path, destination) {
-    const key = join(pkg, path).replaceAll(sep, "/");
-    const value = join("/modules", pkg, destination).replaceAll(sep, "/");
+    const key = normalize(path).replaceAll(sep, "/");
+    const value = normalize(destination).replaceAll(sep, "/");
     importmap[key] = value;
 }
 /**
@@ -371,8 +401,8 @@ function handleFolderExportPath(importmap, pkg, files, path, destination) {
     const [dLHS, dRHS] = destination.split("*");
     for (const file of files) if (file.startsWith(dLHS) && file.endsWith(dRHS)) {
         const substitutions = file.substring(dLHS.length, file.length - dRHS.length);
-        const key = join(pkg, pLHS, substitutions, pRHS).replaceAll(sep, "/");
-        const value = join("/modules", pkg, dLHS, substitutions, dRHS).replaceAll(sep, "/");
+        const key = join(pLHS, substitutions, pRHS).replaceAll(sep, "/");
+        const value = join(dLHS, substitutions, dRHS).replaceAll(sep, "/");
         importmap[key] = value;
     }
 }

@@ -13,6 +13,7 @@
     },
     "workspaces": [
         "builtin/*",
+        "types/*",
         "be",
         "fe"
     ]

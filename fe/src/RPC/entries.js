@@ -1,1 +1,1 @@
-export { listExportedNames } from "@builtin/cjs/client";
+export { prepareModuleWrapper } from "@builtin/cjs/client";

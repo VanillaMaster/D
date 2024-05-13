@@ -23,7 +23,7 @@ router.get("/", function(req, res) {
 router.get("/modules/*", function(req, res, params){
     handleParametricFileRead(req, res, /**@type { { "*": string } } */ (params), modulesFolder);
 })
-router.put("/modules/*", function(req, res, params) {
+router.put("/modules/*", function(req, res, params, store, search) {
     if (!editable.has(/**@type { string } */(req.url))) return void notAllowed(res);
     return void handleParametricResourceWrite(req, res, /**@type { { "*": string } } */ (params), modulesFolder);
 })

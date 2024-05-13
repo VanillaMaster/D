@@ -34,7 +34,9 @@ async function preloadCjsPackage(pkg) {
     for (const entry in exports) {
         const specifier = join(pkg, entry)
         const pathname = join("/modules", pkg, exports[entry]);
-        packagesCache.set(specifier, /**@type { Module } */ (modulesCache.get(pathname)));
+        const module = resolveModule(pathname);
+        if (module == undefined) throw new Error();
+        packagesCache.set(specifier, module);
     }
 }
 

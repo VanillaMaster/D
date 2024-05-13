@@ -17,5 +17,6 @@
     ],
     "dependencies": {
         "json-rpc-2.0": "^1.7.0"
-    }
+    },
+    "kind": ["server"]
 }

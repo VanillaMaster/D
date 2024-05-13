@@ -8,3 +8,10 @@ body {
     margin: 0;
     overflow: hidden;
 }
+:root {
+    --color-surface-1: #f2ecf4;
+    --color-surface-2: #ece6ee;
+
+    --color-accent-1: #e2e0f9;
+    --color-accent-2: #525267;
+}

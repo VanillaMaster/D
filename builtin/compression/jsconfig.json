@@ -8,9 +8,13 @@
         "esModuleInterop": true,
         "allowSyntheticDefaultImports": true,
         "strict": true,
-        "noImplicitAny": true
+        "noImplicitAny": true,
+
+        "types": [
+            "backend"
+        ]
     },
     "include": [
-        "src/**/*", "../compression/src/URLSafeBase64.js",
+        "src/**/*",
     ]
 }

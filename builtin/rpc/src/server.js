@@ -1,7 +1,11 @@
 /**@import { IncomingMessage, ServerResponse } from "node:http" */
+import { router } from "@builtin/backend/server"
 import { JSONRPCServer } from "json-rpc-2.0"
 
 export const server = new JSONRPCServer();
+router.post("/api/rpc", function(req, res) {
+    return void handleRPC(req, res);
+});
 
 /**
  * @param { ServerResponse } res 

@@ -1,0 +1,15 @@
+{
+    "name": "@builtin/compression",
+    "version": "0.0.1",
+    "private": true,
+    "type": "module",
+    "exports": {
+        ".": null,
+        "./URLSafeBase64": {
+            "import": "./src/URLSafeBase64.js"
+        }
+    },
+    "files": [
+        "src/**/*"
+    ]
+}

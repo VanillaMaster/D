@@ -4,7 +4,10 @@
     "private": true,
     "type": "module",
     "exports": {
-        ".": null
+        ".": null,
+        "./server": {
+            "import": "./src/exports.js"
+        } 
     },
     "files": [
         "src/**/*"

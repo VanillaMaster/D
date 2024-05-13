@@ -6,10 +6,13 @@
         "start": "npm start -w be"
     },
     "dependencies": {
+        "@builtin/backend": "*",
         "@builtin/cjs": "*",
         "@builtin/lit": "*",
         "@builtin/rpc": "*",
-        "@builtin/ui": "*"
+        "@builtin/ui": "*",
+        "@builtin/compression": "*",
+        "sax": "github:isaacs/sax-js"
     },
     "workspaces": [
         "builtin/*",

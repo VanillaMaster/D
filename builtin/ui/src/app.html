@@ -1,6 +1,6 @@
 <builtin-app>
     <builtin-sidebar id="sidebar" slot="overlay">
-        <builtin-sidebar-list style="width: 15em; height: 100%; padding: 1em; background-color: wheat;">
+        <builtin-sidebar-list style="width: 15em; height: 100%; padding: 1em; background-color: white;">
             <builtin-sidebar-item active>
                 <span slot="label">asd</span>
             </builtin-sidebar-item>
@@ -12,10 +12,11 @@
             </builtin-sidebar-item>
         </builtin-sidebar-list>
     </builtin-sidebar>
-    <div style="background-color: wheat; height: 64px; padding: 0 16px; box-sizing: border-box; display: flex; align-items: center; gap: 16px;" slot="header">
-        <button onclick="sidebar.toggle()" style="all: unset; line-height: 0; height: 48px; width: 48px; margin: -12px; display: grid; justify-items: center; align-items: center;">
+
+    <div style="background-color: var(--color-surface-2); height: 64px; padding: 0 16px; box-sizing: border-box; display: flex; align-items: center; gap: 16px;" slot="header">
+        <builtin-action-button style="margin: -12px;" action="sidebar-open" target="document">
             <svg height="24px" width="24px"><use href="#icon-menu"></use></svg>
-        </button>
+        </builtin-action-button>
         <h1 style="font-size: 22pt; line-height: 28pt;margin: 0; font-family: sans-serif; font-weight: 400;">
             Something
         </h1>

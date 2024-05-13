@@ -1,5 +1,5 @@
 {
-    "name": "@builtin/rpc",
+    "name": "@builtin/proxy",
     "version": "0.0.1",
     "private": true,
     "type": "module",
@@ -7,17 +7,14 @@
         ".": null,
         "./server": {
             "import": "./src/server.js"
-        },
-        "./client": {
-            "import": "./src/client.js"
         }
     },
     "files": [
         "src/**/*"
     ],
     "dependencies": {
-        "json-rpc-2.0": "^1.7.0",
-        "@builtin/backend": "*"
+        "@builtin/backend": "*",
+        "@builtin/compression": "*"
     },
     "kind": ["server"]
 }

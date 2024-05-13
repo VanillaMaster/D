@@ -45,30 +45,6 @@ router.get("/api/extensions", function(req, res, params, store, { kind }) {
     return void handleStaticRead(req, res, extensionsCacheIndex, "application/json");
 })
 
-import { request } from "node:https"
-import { decode } from "@builtin/compression/URLSafeBase64"
-router.all("/api/proxy", function(req, res, params, store, { url }) {
-    const decoder = new TextDecoder();
-    const buffer = decode(url);
-    const { hostname, pathname } = new URL(decoder.decode(buffer));
-    const { method, headers } = req;
-    
-    req.headers.host = hostname;
-    req.headers.referer = hostname;
-
-    const proxyReq = request(/**@type { import("node:http").RequestOptions }*/({
-        headers,
-        method,
-        hostname,
-        path: pathname
-    }), function(proxyRes) {
-        res.writeHead(/**@type { number } */(proxyRes.statusCode), proxyRes.headers)
-        proxyRes.pipe(res)
-    })
-    req.pipe(proxyReq);
-})
-
-
 export const server = createServer();
 server.on("request", function(req, res) { router.lookup(req, res); });
 

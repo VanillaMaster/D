@@ -16,11 +16,15 @@ export class App extends LitElement {
             overflow-x: hidden;
             display: grid;
             grid-template-rows: auto 1fr auto;
+
+            isolation: isolate;
         }
         .header {
             position: sticky;
             top: 0;
             align-self: start;
+
+            z-index: 1;
         }
         .overlay {
             position: absolute;

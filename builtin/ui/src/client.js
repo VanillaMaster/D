@@ -4,6 +4,7 @@ import "./components/SideBar.js"
 import "./components/SideBarItem.js"
 import "./components/SideBarList.js"
 import "./components/FeedCard.js"
+import "./components/Thumbnail.js"
 
 import { client } from "@builtin/rpc/client";
 
@@ -191,9 +192,9 @@ import { fetch as fetchProxy } from "@builtin/proxy/client"
             console.log(node);
             const { children: { title: { text: title }, description: { text: description }} } = node;
             template.innerHTML = `<builtin-feed-card>${description}</builtin-feed-card>`
-            const img = template.content.querySelector("img");
-            if (img) container.append(img);
-            else console.warn("no img");
+            // const { src } = template.content.querySelector("img");
+            // if (img) container.append(title, img);
+            // else console.warn("no img");
         }
     }))
 })()

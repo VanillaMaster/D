@@ -17,6 +17,11 @@ export class SideBarItem extends LitElement {
     static styles = css`
         :host {
             height: 56px;
+
+            font-family: sans-serif;
+            font-size: 14pt;
+            line-height: 20pt;
+            font-weight: 500;
         }
 
         :host([active]) .backdrop {
@@ -41,11 +46,6 @@ export class SideBarItem extends LitElement {
 
             display: flex;
             align-items: center;
-
-            font-family: sans-serif;
-            font-size: 14pt;
-            line-height: 20pt;
-            font-weight: 500;
 
             padding: 0 24px 0 16px;
             box-sizing: border-box;

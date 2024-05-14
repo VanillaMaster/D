@@ -1,6 +1,8 @@
 html {
     height: 100%;
     overflow: hidden;
+
+    font-family: sans-serif;
 }
 
 body {
@@ -14,4 +16,15 @@ body {
 
     --color-accent-1: #e2e0f9;
     --color-accent-2: #525267;
+}
+
+img {
+    max-width: 100%;
+    
+    background-color: white;
+    max-height: 11em;
+    border-radius: 1em;
+    width: 100%;
+    object-fit: cover;
+    object-position: top;
 }

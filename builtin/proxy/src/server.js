@@ -1,17 +1,25 @@
 /**@import { ClientRequest, IncomingMessage, ServerResponse, RequestOptions } from "node:http" */
 import { router } from "@builtin/backend/server";
-import { decode } from "@builtin/compression/URLSafeBase64"
 import { request as requestUnsafe } from "node:https"
+import { pipeline } from "node:stream";
 
 const RESPONSE = Symbol("response");
 
-const decoder = new TextDecoder();
+/**
+ * @param { ServerResponse } res 
+ * @param { string } [msg] 
+ */
+export function internalServerError(res, msg) {
+    res.statusCode = 500;
+    if (msg !== undefined) res.statusMessage = msg;
+    res.end();
+}
 
 /**
  * @param { ServerResponse } res 
  */
-export function internalServerError(res) {
-    res.statusCode = 500;
+function unprocessableEntity(res) {
+    res.statusCode = 422;
     res.end();
 }
 
@@ -50,26 +58,44 @@ function request(options, response) {
 function requestCallBack(proxyRes) {
     const { [RESPONSE]: response } = this;
     response.writeHead(/**@type { number } */(proxyRes.statusCode), proxyRes.headers)
-    proxyRes.pipe(response);
+    pipeline(proxyRes, response, /**@param { NodeJS.ErrnoException | null } err */function(err) {
+        if (err != null) return void internalServerError(response, err.code);
+    })
 }
 
 /**
  * @typedef { { [RESPONSE]: ServerResponse } } MetaRequest
  */
 
-router.all("/api/proxy", function(req, res, params, store, { url }) {
-    const buffer = decode(url);
-    const deocdedURL = decoder.decode(buffer);
-    const { method, headers } = req;
+router.all("/api/proxy", function(req, res) {
+    const { method, headers: originalHeaders } = req;
+    /**@type { Record<string, string | string[]> } */
+    const headers = {};
+    /**@type { unknown } */
+    let url;
+    for (const name in originalHeaders) {
+        if (name.startsWith("override-")) {
+            if (name == "override-url") url = originalHeaders[name];
+            continue;
+        }
+        headers[name] = /**@type { string | string[] }*/(originalHeaders[name]);
+    }
+    if (typeof url !== "string") return unprocessableEntity(res);
+    const { hostname, host, pathname: path, error } = parseURL(url);
+    if (error) return unprocessableEntity(res);
+    headers.host = host;
 
-    const { hostname, pathname: path, error } = parseURL(deocdedURL);
-    if (error) return internalServerError(res);
-    
-    req.headers.host = hostname;
-    req.headers.referer = hostname;
-    
+    for (const originalName in originalHeaders) {
+        if (!originalName.startsWith("override-")) continue;
+        const name = originalName.substring(9);
+        if (name == "url") continue;
+
+        headers[name] = /**@type { string | string[] }*/(originalHeaders[originalName]);
+    }
+
     const proxyReq = request({ headers, method, hostname, path }, res);
     if (proxyReq == null) return void internalServerError(res);
-
-    req.pipe(proxyReq);
+    pipeline(req, proxyReq, /**@param { NodeJS.ErrnoException | null } err */function(err) {
+        if (err != null) return void internalServerError(res, err.code);
+    })
 })

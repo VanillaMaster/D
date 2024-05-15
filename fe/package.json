@@ -17,6 +17,7 @@
         "@builtin/backend": "*",
         "@builtin/cjs": "*",
         "@builtin/staticfiles": "*",
+        "@builtin/module-walker": "*",
         "mustache": "^4.2.0"
     }
 }

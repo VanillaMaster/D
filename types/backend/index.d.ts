@@ -22,6 +22,11 @@ namespace backend {
         [name: string]: ExtensionsType[];
     }
     
+    interface ModulesState {
+        registry: Registry;
+        extensions:  Extensions;
+    }
+
     interface PjsonExportRecord {
         import?: string;
         require?: string;

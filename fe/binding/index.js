@@ -1,12 +1,19 @@
 import { router } from "@builtin/backend/server"
 import { handleParametricFileRead, handleStaticFileRead } from "@builtin/staticfiles"
-import { join, dirname } from "node:path"
+import { join, dirname, resolve } from "node:path"
 import { fileURLToPath } from "node:url"
 import { CACHE_FOLDER } from "@builtin/config/server"
-import mustache from "mustache";
+import { cacheDocument } from "./document.js"
+import { registry } from "@builtin/module-walker/server"
 
-const assetsFolder = join(dirname(fileURLToPath(import.meta.url)), "../assets/");
+const documentCachePath = resolve(CACHE_FOLDER, "index.html");
+const __dirname = dirname(fileURLToPath(import.meta.url));
+
+const assetsFolder = join(__dirname, "../assets/");
+const documentPath = join(__dirname, "../index.html");
 const workerPath = join(assetsFolder, "worker.js");
+
+await cacheDocument(await registry(), documentPath, documentCachePath);
 
 router.get("/assets/*", function(req, res, params){
     handleParametricFileRead(req, res, /**@type { { "*": string } } */ (params), assetsFolder);
@@ -15,7 +22,7 @@ router.get("/assets/*", function(req, res, params){
 router.get("/worker", function(req, res){
     handleStaticFileRead(req, res, workerPath);
 });
-// console.log(process.cwd());
-// router.get("/", function(req, res) {
-//     handleStaticFileRead(req, res, documentCachePath);
-// });
+
+router.get("/", function(req, res) {
+    handleStaticFileRead(req, res, documentCachePath);
+});

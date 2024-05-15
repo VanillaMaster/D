@@ -1,12 +1,12 @@
-import { readFile, writeFile, mkdir } from "fs/promises";
+import { mkdir, readFile, writeFile } from "fs/promises";
 import { resolve } from "node:path";
 
 import mustache from "mustache";
 
 import { cacheFolder, modulesFolder, rootpagePath } from "./config.js";
+import { list as extensionsList } from "./extension.js";
 import { computeEditableList, computeImportMap, computePrefetchList, computeStylesheetList, listModules } from "./module.js";
-import { v5, NameSpace_FILE, NameSpace_INDEX } from "./uuid/v5.js";
-import { listExtensions, list as extensionsList } from "./extension.js";
+import { NameSpace_FILE, NameSpace_INDEX, v5 } from "./uuid/v5.js";
 
 export const modulesCacheFolder = resolve(cacheFolder, "modules");
 export const extensionsCacheFolder = resolve(cacheFolder, "extensions");
@@ -41,7 +41,7 @@ export const documentCachePath = resolve(cacheFolder, "index.html");
         writeFile(modulesCacheIndex, JSON.stringify(modules)),
         cacheModules(modules),
 
-        cacheDocument(modules)
+        // cacheDocument(modules)
     ]);
 }
 

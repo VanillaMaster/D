@@ -1,153 +1,8 @@
 import { lstat, readFile, readdir, readlink } from "node:fs/promises";
-import { resolve, parse, dirname, extname, sep, normalize, join } from "node:path"
-import { fileURLToPath } from "node:url"
-import { Dirent, existsSync } from "node:fs";
-import { ignoredExtensions, ignoredModules } from "./config.js";
-
-/**
- * @param { string } self 
- * @param { string } searchString 
- * @param { number } [position] 
- */
-function count(self, searchString, position = 0) {
-    if (searchString == "") return Infinity;
-    let i = 0;
-    while ((position = self.indexOf(searchString, position)) !== -1) {
-        position += searchString.length;
-        i++;
-    }
-    return i;
-}
-
-/**
- * @param { any } err 
- * @returns { never }
- */
-function __throw(err) {
-    throw err;
-}
-/**
- * @param { string } path 
- */
-function* paths(path) {
-    const { root } = parse(path);
-    do {
-        yield (path = dirname(path));
-    } while (path !== root);
-}
-
-/**
- * @param { string | URL } entry
- */
-export function getModuleRoot(entry) {
-    const path = fileURLToPath(entry)
-    for (const root of paths(path)) {
-        const pjson = resolve(root, "package.json")
-        if (existsSync(pjson)) return root;
-    }
-    throw new Error();
-}
-
-/**
- * @returns { never[] }
- */
-function __array() { return []; }
-function __null() { return null; }
-
-/**
- * @param { backend.PjsonExportRecord | backend.PjsonExportMap } exports
- * @param { boolean } hasKeysWithDot 
- * @returns { exports is backend.PjsonExportRecord }
- */
-function isPjsonExportRecord(exports, hasKeysWithDot) {
-    return !hasKeysWithDot;
-}
-
-/**
- * @param { backend.PjsonExportRecord | backend.PjsonExportMap } exports
- * @param { boolean } hasKeysWithoutDot 
- * @returns { exports is backend.PjsonExportMap }
- */
-function isPjsonExportMap(exports, hasKeysWithoutDot) {
-    return !hasKeysWithoutDot
-}
-
-/**
- * @param { backend.PjsonExportRecord | backend.PjsonExportMap } exports
- * @param { boolean } hasKeysWithDot 
- * @param { boolean } hasKeysWithoutDot 
- * @returns { exports is backend.PjsonExportMap }
- */
-function isEmptyPjsonExportMap(exports, hasKeysWithDot, hasKeysWithoutDot) {
-    return !(hasKeysWithDot || hasKeysWithoutDot);
-}
-
-/**
- * @param { Record<string, backend.ModuleRecord> } modules 
- */
-export function computeImportMap(modules) {
-    const importmap = {
-        /**@type { Record<string, string> } */
-        imports: {}
-    }
-    for (const pkg in modules) {
-        const { exports, type } = modules[pkg];
-        if (type == "commonjs") for (const entry in exports) {
-            const path = exports[entry];
-            const params = new URLSearchParams();
-            params.append("sw", "intercept");
-            params.append("type", "cjs");
-            params.append("pkg", pkg);
-            if (entry !== ".") params.append("entry", entry);
-            importmap.imports[join(pkg, entry).replaceAll(sep, "/")] = join("/modules", pkg, path).replaceAll(sep, "/") + "?" + params.toString();
-        } else if (type == "module") {
-            for (const entry in exports) {
-                const path = exports[entry];
-                importmap.imports[join(pkg, entry).replaceAll(sep, "/")] = join("/modules", pkg, path).replaceAll(sep, "/")
-            }
-        }
-    }
-    return importmap;
-}
-
-/**
- * @param { Record<string, backend.ModuleRecord> } modules 
- */
-export function computeEditableList(modules) {
-    /**@type { string[] } */
-    const editable = [];
-    for (const module in modules) {
-        const { editable: localEditable } = modules[module];
-        if (localEditable !== undefined) editable.push(...localEditable);
-    }
-    return editable;
-}
-
-/**
- * @param { Record<string, backend.ModuleRecord> } modules 
- */
-export function computeStylesheetList(modules) {
-    /**@type { string[] } */
-    const stylesheet = [];
-    for (const module in modules) {
-        const { stylesheet: localStylesheet } = modules[module];
-        if (localStylesheet !== undefined) stylesheet.push(...localStylesheet);
-    }
-    return stylesheet;
-}
-
-/**
- * @param { Record<string, backend.ModuleRecord> } modules 
- */
-export function computePrefetchList(modules) {
-    /**@type { string[] } */
-    const prefetch = [];
-    for (const module in modules) {
-        const { prefetch: localPrefetch } = modules[module];
-        if (localPrefetch !== undefined) prefetch.push(...localPrefetch);
-    }
-    return prefetch;
-}
+import { resolve, extname, sep, normalize, join } from "node:path"
+import { Dirent } from "node:fs";
+import { IGNORED_EXTENSIONS, IGNORED_MODULES } from "@builtin/config/server"
+import { __array, __null, __throw, count, isEmptyPjsonExportMap, isPjsonExportMap, isPjsonExportRecord, matchPattern } from "./common.js";
 
 /**
  * @param { string } path 
@@ -241,12 +96,12 @@ async function processModule(namespace, name, path, state) {
     } = pjson;
 
     if (kind !== undefined) {
-        if (ignoredExtensions.every(pattern => !matchPattern(pattern, name))) {
+        if (IGNORED_EXTENSIONS.every(pattern => !matchPattern(pattern, name))) {
             state.extensions[name] = kind;
         }
     }
 
-    if (ignoredModules.some(pattern => matchPattern(pattern, name))) return;
+    if (IGNORED_MODULES.some(pattern => matchPattern(pattern, name))) return;
 
     for (let i = 0; i < prefetchPatterns.length; i++) {
         prefetchPatterns[i] = normalize(prefetchPatterns[i]).replaceAll(sep, "/");
@@ -415,33 +270,4 @@ function handleFolderExportPath(importmap, pkg, files, path, destination) {
         const value = join(dLHS, substitutions, dRHS).replaceAll(sep, "/");
         importmap[key] = value;
     }
-}
-
-/**
- * @param { string } pattern 
- * @param { string } subject 
- */
-function matchPattern(pattern, subject) {
-    switch (count(pattern, "*")) {
-        case 0: return matchPatternExact(pattern, subject)
-        case 1: return matchPatternWildcard(pattern, subject);
-        default: return void console.warn(pattern, subject);
-    }
-}
-
-/**
- * @param { string } pattern 
- * @param { string } subject 
- */
-function matchPatternExact(pattern, subject) {
-    return pattern === subject;
-}
-
-/**
- * @param { string } pattern 
- * @param { string } subject 
- */
-function matchPatternWildcard(pattern, subject) {
-    const [lhs, rhs] = pattern.split("*");
-    return subject.startsWith(lhs) && subject.endsWith(rhs);
 }

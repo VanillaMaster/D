@@ -1,12 +1,12 @@
 import Router from "find-my-way";
-import { createServer } from "node:http"
-import { handleStaticFileRead, handleParametricFileRead, handleStaticRead, handleParametricResourceWrite } from "./handleStaticFiles.js";
-import { modulesFolder, port } from "./config.js";
-import { documentCachePath, editable, extensionsCacheFolder, extensionsCacheIndex, modulesCacheFolder, modulesCacheIndex } from "./cache.js";
-import { NameSpace_FILE, v5 } from "./uuid/v5.js";
+import { createServer } from "node:http";
 import { resolve } from "node:path";
+import { editable, extensionsCacheFolder, extensionsCacheIndex, modulesCacheFolder, modulesCacheIndex } from "./cache.js";
+import { modulesFolder, port } from "./config.js";
 import { list as extensionsList } from "./extension.js";
+import { handleParametricResourceWrite, handleStaticRead } from "./handleStaticFiles.js";
 import { notAllowed } from "./helpers.js";
+import { NameSpace_FILE, v5 } from "./uuid/v5.js";
 
 export const router = Router({
     defaultRoute(req, res){
@@ -15,9 +15,9 @@ export const router = Router({
     }
 });
 
-router.get("/", function(req, res) {
-    handleStaticFileRead(req, res, documentCachePath);
-});
+// router.get("/", function(req, res) {
+//     handleStaticFileRead(req, res, documentCachePath);
+// });
 
 // router.get("/modules/*", function(req, res, params){
 //     handleParametricFileRead(req, res, /**@type { { "*": string } } */ (params), modulesFolder);

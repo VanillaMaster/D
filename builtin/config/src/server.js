@@ -1,6 +1,7 @@
 import { cwd } from "node:process"
 import { resolve } from "node:path"
 import { readFile } from "fs/promises";
+import { mkdir } from "node:fs/promises";
 
 export const ROOT = cwd();
 
@@ -17,3 +18,5 @@ export const [
     resolve(ROOT, config.modules.path),
     resolve(ROOT, config.cache.path),
 ])})(await readFile(resolve(ROOT, "config.json")).then(JSON.parse));
+
+await mkdir(CACHE_FOLDER, { recursive: true });

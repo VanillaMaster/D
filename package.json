@@ -16,7 +16,8 @@
         "@builtin/rpc": "*",
         "@builtin/staticfiles": "*",
         "@builtin/ui": "*",
-        "@builtin/config": "*"
+        "@builtin/config": "*",
+        "@builtin/module-walker": "*"
     },
     "workspaces": [
         "builtin/*",

@@ -37,25 +37,13 @@
             },
             "required": ["path"]
         },
-        "rootpage": {
-            "type": "object",
-            "properties": {
-                "path": {
-                    "type": "string"
-                }
-            },
-            "required": ["path"]
-        },
         "port": {
             "type": "number"
         }
     },
     "required": [
         "modules",
-        "assets",
-        "worker",
         "cache",
-        "rootpage",
         "port"
     ]
 }

@@ -1,16 +1,16 @@
 {
     "$schema": "./schema.json",
     "assets": {
-        "path": "../fe/"
+        "path": "../fe/assets/"
     },
     "worker": {
-        "path": "../fe/worker.js"
+        "path": "../fe/assets/worker.js"
     },
     "cache": {
         "path": "./.cache/"
     },
     "rootpage": {
-        "path": "../fe/index.html"
+        "path": "../fe/assets/index.html"
     },
     "modules": {
         "path": "../node_modules/",
@@ -19,6 +19,9 @@
             "@builtin/frontend",
             "@types/*"
         ]
+    },
+    "extensions": {
+        "ignore": []
     },
     "port": 8080
 }

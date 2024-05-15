@@ -4,10 +4,19 @@
     "private": true,
     "type": "module",
     "exports": {
-        ".": null
+        ".": null,
+        "./server": {
+            "import": "./binding/index.js"
+        }
     },
+    "kind": [
+        "server"
+    ],
     "scripts": {},
     "dependencies": {
-        "@builtin/cjs": "*"
+        "@builtin/backend": "*",
+        "@builtin/cjs": "*",
+        "@builtin/staticfiles": "*",
+        "mustache": "^4.2.0"
     }
 }

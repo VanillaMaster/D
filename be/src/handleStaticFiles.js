@@ -4,6 +4,7 @@ import { getMime } from "./mime.js";
 import { extname, resolve } from "node:path"
 import { pipeline } from "node:stream";
 import { createReadStream, createWriteStream } from "node:fs"
+import { internalServerError, notFound } from "./helpers.js";
 
 /**
  * @typedef { { [RESPONSE]: ServerResponse; [MIME]: string; } } MetaReadStream
@@ -11,28 +12,6 @@ import { createReadStream, createWriteStream } from "node:fs"
  */
 const MIME = Symbol("mime");
 const RESPONSE = Symbol("request");
-
-/**
- * @param { ServerResponse } res 
- */
-export function notFound(res) {
-    res.statusCode = 404;
-    res.end();
-}
-/**
- * @param { ServerResponse } res 
- */
-export function notAllowed(res) {
-    res.statusCode = 405;
-    res.end();
-}
-/**
- * @param { ServerResponse } res 
- */
-export function internalServerError(res) {
-    res.statusCode = 500;
-    res.end();
-}
 
 /**
  * @param { NodeJS.ErrnoException | null } err 

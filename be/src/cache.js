@@ -26,8 +26,7 @@ export const extensionsCacheIndex = resolve(extensionsCacheFolder, v5(Buffer.fro
 export const documentCachePath = resolve(cacheFolder, "index.html");
 
 {
-    const modules = await listModules(modulesFolder);
-    const extensions = listExtensions(modules);
+    const { registry: modules, extensions } = await listModules(modulesFolder);
 
     for (const element of computeEditableList(modules)) editable.add(element)
 
@@ -47,7 +46,7 @@ export const documentCachePath = resolve(cacheFolder, "index.html");
 }
 
 /**
- * @param { Registry } modules 
+ * @param { backend.Registry } modules 
  */
 async function cacheDocument(modules) {
     const template = await readFile(rootpagePath, { encoding: "utf8"});
@@ -60,7 +59,7 @@ async function cacheDocument(modules) {
 }
 
 /**
- * @param { Registry } modules 
+ * @param { backend.Registry } modules 
  */
 async function cacheModules(modules) {
     /**@type { Promise<void>[] } */

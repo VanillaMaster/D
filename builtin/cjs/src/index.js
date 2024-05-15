@@ -187,9 +187,9 @@ function createLocalRequire(parent) {
 
 /**
  * @param { string } pkg 
- * @param { string } entry 
+ * @param { string } [entry]
  */
-export async function prepareModuleWrapper(pkg, entry) {
+export async function prepareModuleWrapper(pkg, entry = ".") {
     await preloadCjsPackage$1(pkg);
 
     const exports = globalRequire(pkg);

@@ -4,14 +4,26 @@
     "private": true,
     "type": "module",
     "exports": {
-        ".": null,
+        ".": {
+            "types": "./src/global.d.ts",
+            "default": null
+        },
         "./server": {
             "import": "./src/exports.js"
-        } 
+        },
+        "./helpers": {
+            "import": "./src/helpers.js"
+        }
     },
     "files": [
-        "src/**/*"
+        "src/**/*",
+        "bin/**/*",
+        "config.json",
+        "schema.json"
     ],
+    "bin": {
+        "server": "bin/server.js"
+    },
     "scripts": {
         "start": "node src/index.js",
         "trace": "node --trace-warnings src/index.js"

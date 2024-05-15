@@ -9,6 +9,9 @@ export const {
     const registration = await navigator.serviceWorker.register("/worker", {
         type: 'module',
         scope: "/"
+    }).catch(function(err) {
+        debugger
+        console.log(err);
     });
     const { active: worker } = /**@type { { active: ServiceWorker } } */ (registration);
     return { registration, worker }

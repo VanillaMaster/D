@@ -3,20 +3,14 @@ interface JSON {
 }
 
 interface Config {
-    assets: {
-        path: string;
-    }
     modules: {
         path: string;
-        ignore: string[];
+        ignore?: string[];
     }
-    worker: {
-        path: string;
+    extensions: {
+        ignore?: string[];
     }
     cache: {
-        path: string;
-    }
-    rootpage: {
         path: string;
     }
     port: number;

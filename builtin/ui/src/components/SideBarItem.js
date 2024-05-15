@@ -16,11 +16,10 @@ export class SideBarItem extends LitElement {
 
     static styles = css`
         :host {
-            height: 56px;
+            font-size: 1.2em;
+            height: 3em;
 
-            font-family: sans-serif;
-            font-size: 14pt;
-            line-height: 20pt;
+            line-height: 1em;
             font-weight: 500;
         }
 

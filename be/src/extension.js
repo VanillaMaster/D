@@ -1,7 +1,5 @@
-/**@import { Registry } from "./module.js" */
-
 /**
- * @param { Registry } modules 
+ * @param { backend.Registry } modules 
  */
 export function listExtensions(modules) {
     /**@type { Record<string, string[]> } */

@@ -1,27 +1,10 @@
 /**@import { ClientRequest, IncomingMessage, ServerResponse, RequestOptions } from "node:http" */
 import { router } from "@builtin/backend/server";
+import { internalServerError, unprocessableEntity } from "@builtin/backend/helpers";
 import { request as requestUnsafe } from "node:https"
 import { pipeline } from "node:stream";
 
 const RESPONSE = Symbol("response");
-
-/**
- * @param { ServerResponse } res 
- * @param { string } [msg] 
- */
-export function internalServerError(res, msg) {
-    res.statusCode = 500;
-    if (msg !== undefined) res.statusMessage = msg;
-    res.end();
-}
-
-/**
- * @param { ServerResponse } res 
- */
-function unprocessableEntity(res) {
-    res.statusCode = 422;
-    res.end();
-}
 
 /**
  * @param { string } url 

@@ -2,7 +2,7 @@ import { lstat, readFile, readdir, readlink } from "node:fs/promises";
 import { resolve, parse, dirname, extname, sep, normalize, join } from "node:path"
 import { fileURLToPath } from "node:url"
 import { Dirent, existsSync } from "node:fs";
-import { ignoredModules } from "./config.js";
+import { ignoredExtensions, ignoredModules } from "./config.js";
 
 /**
  * @param { string } self 
@@ -55,35 +55,35 @@ function __array() { return []; }
 function __null() { return null; }
 
 /**
- * @param { PjsonExportRecord | PjsonExportMap } exports
+ * @param { backend.PjsonExportRecord | backend.PjsonExportMap } exports
  * @param { boolean } hasKeysWithDot 
- * @returns { exports is PjsonExportRecord }
+ * @returns { exports is backend.PjsonExportRecord }
  */
 function isPjsonExportRecord(exports, hasKeysWithDot) {
     return !hasKeysWithDot;
 }
 
 /**
- * @param { PjsonExportRecord | PjsonExportMap } exports
+ * @param { backend.PjsonExportRecord | backend.PjsonExportMap } exports
  * @param { boolean } hasKeysWithoutDot 
- * @returns { exports is PjsonExportMap }
+ * @returns { exports is backend.PjsonExportMap }
  */
 function isPjsonExportMap(exports, hasKeysWithoutDot) {
     return !hasKeysWithoutDot
 }
 
 /**
- * @param { PjsonExportRecord | PjsonExportMap } exports
+ * @param { backend.PjsonExportRecord | backend.PjsonExportMap } exports
  * @param { boolean } hasKeysWithDot 
  * @param { boolean } hasKeysWithoutDot 
- * @returns { exports is PjsonExportMap }
+ * @returns { exports is backend.PjsonExportMap }
  */
 function isEmptyPjsonExportMap(exports, hasKeysWithDot, hasKeysWithoutDot) {
     return !(hasKeysWithDot || hasKeysWithoutDot);
 }
 
 /**
- * @param { Record<string, ModuleRecord> } modules 
+ * @param { Record<string, backend.ModuleRecord> } modules 
  */
 export function computeImportMap(modules) {
     const importmap = {
@@ -98,7 +98,7 @@ export function computeImportMap(modules) {
             params.append("sw", "intercept");
             params.append("type", "cjs");
             params.append("pkg", pkg);
-            params.append("entry", entry)
+            if (entry !== ".") params.append("entry", entry);
             importmap.imports[join(pkg, entry).replaceAll(sep, "/")] = join("/modules", pkg, path).replaceAll(sep, "/") + "?" + params.toString();
         } else if (type == "module") {
             for (const entry in exports) {
@@ -111,7 +111,7 @@ export function computeImportMap(modules) {
 }
 
 /**
- * @param { Record<string, ModuleRecord> } modules 
+ * @param { Record<string, backend.ModuleRecord> } modules 
  */
 export function computeEditableList(modules) {
     /**@type { string[] } */
@@ -124,7 +124,7 @@ export function computeEditableList(modules) {
 }
 
 /**
- * @param { Record<string, ModuleRecord> } modules 
+ * @param { Record<string, backend.ModuleRecord> } modules 
  */
 export function computeStylesheetList(modules) {
     /**@type { string[] } */
@@ -137,7 +137,7 @@ export function computeStylesheetList(modules) {
 }
 
 /**
- * @param { Record<string, ModuleRecord> } modules 
+ * @param { Record<string, backend.ModuleRecord> } modules 
  */
 export function computePrefetchList(modules) {
     /**@type { string[] } */
@@ -150,64 +150,73 @@ export function computePrefetchList(modules) {
 }
 
 /**
+ * @typedef ModulesState
+ * @property { backend.Registry } registry
+ * @property { backend.Extensions } extensions
+ */
+
+/**
  * @param { string } path 
  */
 export async function listModules(path) {
-    /**@type { Registry } */
-    const registry = {};
+    /**@type { ModulesState } */
+    const state = {
+        registry: {},
+        extensions: {}
+    }
 
     const elements = await readdir(path, {
         withFileTypes: true
     }).catch(__array);
 
-    await Promise.all(elements.map(element => processModulesEntry(element, path, registry, null)));
+    await Promise.all(elements.map(element => processModulesEntry(element, path, state, null)));
 
-    return registry;
+    return state
 }
 
 /**
  * @param { Dirent } element 
  * @param { string } path 
- * @param { Registry } registry 
+ * @param { ModulesState } state 
  * @param { string | null } namespaces 
  */
-function processModulesEntry(element, path, registry, namespaces) {
-    if (element.isDirectory()) return processModulesDirectory(element, path, registry, namespaces);
-    if (element.isSymbolicLink()) return processModulesSymbolicLink(element, path, registry, namespaces);
+function processModulesEntry(element, path, state, namespaces) {
+    if (element.isDirectory()) return processModulesDirectory(element, path, state, namespaces);
+    if (element.isSymbolicLink()) return processModulesSymbolicLink(element, path, state, namespaces);
 }
 /**
  * @param { Dirent } element 
  * @param { string } path 
- * @param { Registry } registry 
+ * @param { ModulesState } state 
  * @param { string | null } namespaces 
  */
-async function processModulesSymbolicLink(element, path, registry, namespaces) {
+async function processModulesSymbolicLink(element, path, state, namespaces) {
     const link = await readlink(resolve(element.path, element.name));
     const stats = await lstat(resolve(element.path, link));
-    if (stats.isDirectory()) return processModulesDirectory(element, path, registry, namespaces);
+    if (stats.isDirectory()) return processModulesDirectory(element, path, state, namespaces);
 }
 /**
  * @param { Dirent } element 
  * @param { string } path 
- * @param { Registry } registry 
+ * @param { ModulesState } state 
  * @param { string | null } namespaces 
  */
-function processModulesDirectory(element, path, registry, namespaces) {
+function processModulesDirectory(element, path, state, namespaces) {
     const { name } = element
     const folder = resolve(path, name);
     if (name.startsWith("@")) {
-        if (namespaces === null) return processNamespace(name, folder, registry);
-    } else return processModule(namespaces, name, folder, registry);
+        if (namespaces === null) return processNamespace(name, folder, state);
+    } else return processModule(namespaces, name, folder, state);
 }
 
 /**
  * @param { string } namespace 
  * @param { string } path 
- * @param { Registry } registry 
+ * @param { ModulesState } state 
  */
-async function processNamespace(namespace, path, registry) {
+async function processNamespace(namespace, path, state) {
     const elements = await readdir(path, { withFileTypes: true });
-    await Promise.all(elements.map(element => processModulesEntry(element, path, registry, namespace)))
+    await Promise.all(elements.map(element => processModulesEntry(element, path, state, namespace)))
 }
 
 const EXTENSIONS = [".js", ".cjs", ".mjs", ".json"];
@@ -216,15 +225,14 @@ const EXTENSIONS = [".js", ".cjs", ".mjs", ".json"];
  * @param { string | null } namespace 
  * @param { string } name 
  * @param { string } path 
- * @param { Registry } registry 
+ * @param { ModulesState } state 
  */
-async function processModule(namespace, name, path, registry) {
+async function processModule(namespace, name, path, state) {
     if (namespace !== null) name = `${namespace}/${name}`;
-    if (ignoredModules.some(pattern => matchPattern(pattern, name))) return;
 
     const buffer = await readFile(resolve(path, "package.json")).catch(__null);
     if (buffer == null) return;
-    /**@type { Pjson } */
+    /**@type { backend.Pjson } */
     const pjson = JSON.parse(buffer);
 
     const {
@@ -237,6 +245,14 @@ async function processModule(namespace, name, path, registry) {
         stylesheet: stylesheetPatterns = [],
         kind
     } = pjson;
+
+    if (kind !== undefined) {
+        if (ignoredExtensions.every(pattern => !matchPattern(pattern, name))) {
+            state.extensions[name] = kind;
+        }
+    }
+
+    if (ignoredModules.some(pattern => matchPattern(pattern, name))) return;
 
     for (let i = 0; i < prefetchPatterns.length; i++) {
         prefetchPatterns[i] = normalize(prefetchPatterns[i]).replaceAll(sep, "/");
@@ -301,8 +317,8 @@ async function processModule(namespace, name, path, registry) {
         if (exportsMapExclude.includes(key)) continue;
         exportmap[key] = exportsMapInclude[key];
     }
-    /**@type { ModuleRecord } */
-    const record = (registry[name] = {
+    /**@type { backend.ModuleRecord } */
+    const record = (state.registry[name] = {
         type,
         exports: exportmap,
         dependencies: Object.keys(dependencies),
@@ -319,8 +335,8 @@ async function processModule(namespace, name, path, registry) {
  * @param { string[] } importmapExclude  
  * @param { string } pkg 
  * @param { string [] } files 
- * @param { PackageType } type 
- * @param { PjsonExportMap} map 
+ * @param { backend.PackageType } type 
+ * @param { backend.PjsonExportMap} map 
  */
 function handleExportMap(importmapInclude, importmapExclude, pkg, files, type, map) {
     for (const exportName in map) {
@@ -342,9 +358,9 @@ function handleExportMap(importmapInclude, importmapExclude, pkg, files, type, m
  * @param { Record<string, string> } importmap 
  * @param { string } pkg 
  * @param { string [] } files 
- * @param { PackageType } type 
+ * @param { backend.PackageType } type 
  * @param { string } path 
- * @param { PjsonExportRecord } record 
+ * @param { backend.PjsonExportRecord } record 
  */
 function handleExportRecord(importmap, pkg, files, type, path, record) {
     /**@type { string } */

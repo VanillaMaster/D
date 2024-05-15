@@ -1,0 +1,15 @@
+{
+    "name": "@builtin/config",
+    "version": "0.0.1",
+    "private": true,
+    "type": "module",
+    "exports": {
+        ".": null,
+        "./server": {
+            "import": "./src/server.js"
+        }
+    },
+    "files": [
+        "src/**/*"
+    ]
+}

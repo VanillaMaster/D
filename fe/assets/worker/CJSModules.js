@@ -10,8 +10,9 @@ const self = /**@type {*}*/ (globalThis.self);
 export function loadCjsModule(e, searchParams){
     if (e.clientId === "") return void e.respondWith(new Response(null, { status: 422 }));
     const pkg = searchParams.get("pkg");
-    const entry = searchParams.get("entry");
-    if (entry == null || pkg == null) return void e.respondWith(new Response(null, { status: 422 }));
+    const entry = searchParams.get("entry") ?? ".";
+    
+    if (pkg == null) return void e.respondWith(new Response(null, { status: 422 }));
 
     e.respondWith(cjsModule(e.clientId, pkg, entry))
     return true
@@ -20,7 +21,7 @@ export function loadCjsModule(e, searchParams){
 /**
  * @param { string } clientId 
  * @param {*} pkg 
- * @param { string } entry  
+ * @param { string } entry
  * @returns { Promise<Response> }
  */
 async function cjsModule(clientId, pkg, entry) {

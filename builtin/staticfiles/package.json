@@ -1,0 +1,22 @@
+{
+    "name": "@builtin/staticfiles",
+    "version": "0.0.1",
+    "private": true,
+    "type": "module",
+    "exports": {
+        ".": {
+            "import": "./src/index.js"
+        },
+        "./server": {
+            "import": "./src/server.js"
+        }
+    },
+    "files": [
+        "src/**/*"
+    ],
+    "dependencies": {
+        "@builtin/backend": "*",
+        "@builtin/config": "*"
+    },
+    "kind": ["server"]
+}

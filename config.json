@@ -1,0 +1,18 @@
+{
+    "$schema": "node_modules\\@builtin\\config\\schema.json",
+    "cache": {
+        "path": ".cache"
+    },
+    "modules": {
+        "path": "node_modules",
+        "ignore": [
+            "@builtin/backend",
+            "@builtin/frontend",
+            "@types/*"
+        ]
+    },
+    "extensions": {
+        "ignore": []
+    },
+    "port": 8080
+}

@@ -30,7 +30,8 @@
     },
     "dependencies": {
         "find-my-way": "^8.1.0",
-        "mustache": "^4.2.0"
+        "mustache": "^4.2.0",
+        "@builtin/module-walker": "*"
     },
     "devDependencies": {
         "@types/node": "^20.12.7"

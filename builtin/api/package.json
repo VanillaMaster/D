@@ -1,0 +1,22 @@
+{
+    "name": "@builtin/api",
+    "version": "0.0.1",
+    "private": true,
+    "type": "module",
+    "exports": {
+        ".": null,
+        "./server": {
+            "import": "./src/index.js"
+        }
+    },
+    "files": [
+        "src/**/*"
+    ],
+    "dependencies": {
+        "@builtin/module-walker": "*",
+        "@builtin/backend": "*",
+        "@builtin/config": "*",
+        "@builtin/staticfiles": "*"
+    },
+    "kind": ["server"]
+}

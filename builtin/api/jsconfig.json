@@ -1,0 +1,20 @@
+{
+    "compilerOptions": {
+        "module": "NodeNext",
+        "target": "ES2022",
+        
+        "allowJs": true,
+        "checkJs": true,
+        "esModuleInterop": true,
+        "allowSyntheticDefaultImports": true,
+        "strict": true,
+        "noImplicitAny": true,
+        
+        "types": [
+            "backend"
+        ]
+    },
+    "include": [
+        "src/**/*",
+    ]
+}

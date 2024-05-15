@@ -19,5 +19,8 @@
         "@builtin/staticfiles": "*",
         "@builtin/module-walker": "*",
         "mustache": "^4.2.0"
+    },
+    "devDependencies": {
+        "@types/node": "^20.12.12"
     }
 }

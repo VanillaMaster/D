@@ -18,5 +18,8 @@
         "@builtin/config": "*",
         "@builtin/staticfiles": "*"
     },
+    "devDependencies": {
+        "@types/node": "^20.12.12"
+    },
     "kind": ["server"]
 }

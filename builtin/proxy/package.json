@@ -18,5 +18,8 @@
     "dependencies": {
         "@builtin/backend": "*"
     },
+    "devDependencies": {
+        "@types/node": "^20.12.12"
+    },
     "kind": ["server"]
 }

@@ -19,5 +19,8 @@
         "json-rpc-2.0": "^1.7.0",
         "@builtin/backend": "*"
     },
+    "devDependencies": {
+        "@types/node": "^20.12.12"
+    },
     "kind": ["server"]
 }

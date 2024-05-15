@@ -8,7 +8,12 @@
         "esModuleInterop": true,
         "allowSyntheticDefaultImports": true,
         "strict": true,
-        "noImplicitAny": true
+        "noImplicitAny": true,
+
+        "types": [
+            "node",
+            "backend"
+        ]
     },
     "include": [
         "src/**/*",

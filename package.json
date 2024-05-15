@@ -7,17 +7,22 @@
         "start": "server"
     },
     "dependencies": {
-        "@builtin/backend": "*",
+        "@builtin/api": "*",
         "@builtin/cjs": "*",
         "@builtin/compression": "*",
+        "@builtin/config": "*",
         "@builtin/lit": "*",
+        "@builtin/module-walker": "*",
         "@builtin/parsing": "*",
         "@builtin/proxy": "*",
         "@builtin/rpc": "*",
         "@builtin/staticfiles": "*",
         "@builtin/ui": "*",
-        "@builtin/config": "*",
-        "@builtin/module-walker": "*"
+        "@builtin/backend": "*",
+        "@builtin/frontend": "*"
+    },
+    "devDependencies": {
+        "@types/backend": "*"
     },
     "workspaces": [
         "builtin/*",

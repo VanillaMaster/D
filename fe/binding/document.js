@@ -1,5 +1,4 @@
 import { join, sep } from "node:path"
-import { registry } from "@builtin/module-walker/server"
 import mustache from "mustache";
 import { readFile, writeFile } from "node:fs/promises"
 

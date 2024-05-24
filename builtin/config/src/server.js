@@ -1,7 +1,6 @@
 import { cwd } from "node:process"
 import { resolve } from "node:path"
-import { readFile } from "fs/promises";
-import { mkdir } from "node:fs/promises";
+import { mkdir, readFile } from "node:fs/promises";
 
 export const ROOT = cwd();
 

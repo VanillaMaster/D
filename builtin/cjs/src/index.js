@@ -21,7 +21,7 @@ function __throw(error) { throw error; }
 async function preloadCjsPackage(pkg) {
     const url = new URL("/api/modules", document.location.origin);
     url.searchParams.append("name", pkg);
-    /**@type { ModuleRecord } */
+    /**@type { backend.ModuleRecord } */
     const data = await fetch(url).then(toJson);
 
     const { files, dependencies, exports } = data;

@@ -15,7 +15,7 @@ server.on("request", function(req, res) {
     router.lookup(req, res);
 });
 
-(function(extensions){
+extensions().then(function(extensions){
     Promise.all(
         Object.keys(extensions)
             .filter(extension => extensions[extension].includes("server"))
@@ -27,4 +27,4 @@ server.on("request", function(req, res) {
         console.error(e);
     });
 
-})(await extensions())
+});

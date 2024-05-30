@@ -10,7 +10,8 @@
         },
         "./backend": {
             "import": "./src/server.js"
-        }
+        },
+        "./tmp": "./src/listModulesV2.js"
     },
     "files": [
         "src/**/*"

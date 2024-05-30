@@ -8,10 +8,17 @@
         "./Base64url": {
             "import": "./src/URLSafeBase64.js"
         },
-        "./base64url": {
+        "./*": {
+            "import": "./*",
+            "default": null
+        },
+        "./src/secret/*": {
+            "default": null
+        },
+        "./base64url__": {
             "import": {
                 "import": {
-                    "import": "./src/base64url.js"
+                    "default": "./src/URLSafeBase64.js"
                 }
             }
         }

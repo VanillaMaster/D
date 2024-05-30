@@ -12,16 +12,20 @@
             "import": "./binding/index.js"
         }
     },
-    "kind": ["server", "backend"],
+    "kind": [
+        "server",
+        "backend"
+    ],
     "scripts": {},
     "dependencies": {
         "@builtin/backend": "*",
         "@builtin/cjs": "*",
-        "@builtin/staticfiles": "*",
         "@builtin/module-walker": "*",
+        "@builtin/staticfiles": "*",
         "mustache": "^4.2.0"
     },
     "devDependencies": {
+        "@types/mustache": "^4.2.5",
         "@types/node": "^20.12.12"
     }
 }

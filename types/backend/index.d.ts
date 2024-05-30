@@ -67,3 +67,32 @@ declare namespace backend {
     }
 
 }
+
+
+interface Pjson {
+    name: string;
+    dependencies: Record<string, string>;
+
+    main?: string;
+    type?: Pjson.type;
+
+    exports?: Pjson.exports;
+}
+declare namespace Pjson {
+    interface ArrayExports extends Array<string | null | ArrayExports | ConditionalExports> {}
+    
+    interface ConditionalExports {
+        import?:  string | null | ArrayExports | ConditionalExports;
+        require?: string | null | ArrayExports | ConditionalExports;
+        default?: string | null | ArrayExports | ConditionalExports;
+    }
+
+    interface SubpathExports {
+        [subpath: `.${string}`]: string | null | ArrayExports | ConditionalExports;
+    }
+
+    type exports = string | null | ArrayExports | ConditionalExports | SubpathExports;
+
+
+    type type = "commonjs" | "module";
+}

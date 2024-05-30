@@ -5,7 +5,7 @@
     "type": "module",
     "exports": {
         ".": null,
-        "./URLSafeBase64": {
+        "./Base64url": {
             "import": "./src/URLSafeBase64.js"
         }
     },

@@ -4,10 +4,7 @@
     "private": true,
     "type": "module",
     "exports": {
-        ".": {
-            "types": "./src/global.d.ts",
-            "default": null
-        },
+        ".": null,
         "./server": {
             "import": "./src/exports.js"
         },

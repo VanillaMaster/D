@@ -7,11 +7,12 @@
         ".": null,
         "./server": {
             "import": "./binding/index.js"
+        },
+        "./backend": {
+            "import": "./binding/index.js"
         }
     },
-    "kind": [
-        "server"
-    ],
+    "kind": ["server", "backend"],
     "scripts": {},
     "dependencies": {
         "@builtin/backend": "*",

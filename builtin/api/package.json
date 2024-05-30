@@ -7,6 +7,10 @@
         ".": null,
         "./server": {
             "import": "./src/index.js"
+        },
+
+        "./backend": {
+            "import": "./src/index.js"
         }
     },
     "files": [
@@ -21,5 +25,5 @@
     "devDependencies": {
         "@types/node": "^20.12.12"
     },
-    "kind": ["server"]
+    "kind": ["server", "backend"]
 }

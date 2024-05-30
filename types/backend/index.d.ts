@@ -1,4 +1,4 @@
-namespace backend {
+declare namespace backend {
 
     type PackageType = "commonjs" | "module";
     type ExtensionsType = "server" | "client";

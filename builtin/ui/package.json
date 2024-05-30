@@ -5,18 +5,37 @@
     "type": "module",
     "exports": {
         ".": null,
-        "./server": "./src/server.js",
-        "./client": "./src/client.js"
+        "./server": {
+            "import": "./src/server.js"
+        },
+        "./client": {
+            "import": "./src/client.js"
+        },
+        
+        "./backend": {
+            "import": "./src/server.js"
+        },
+        "./frontend": {
+            "import": "./src/client.js"
+        }
     },
     "files": [
         "src/**/*",
         "default/**/*",
         "editable/**/*"
     ],
+    "dependencies": {
+        "@builtin/lit": "*"
+    },
     "devDependencies": {
         "@types/node": "^20.12.12"
     },
-    "kind": ["server", "client"],
+    "kind": [
+        "server",
+        "client",
+        "backend",
+        "frontend"
+    ],
     "disabled": false,
     "prefetch": [
         "src/*.html"

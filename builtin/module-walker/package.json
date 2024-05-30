@@ -7,6 +7,9 @@
         ".": null,
         "./server": {
             "import": "./src/server.js"
+        },
+        "./backend": {
+            "import": "./src/server.js"
         }
     },
     "files": [

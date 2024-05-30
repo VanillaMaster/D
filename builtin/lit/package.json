@@ -8,6 +8,10 @@
         "./client": {
             "import": "./lib/lit-core.min.js",
             "types": "./lib/lit.d.ts"
+        },
+        "./frontend": {
+            "import": "./lib/lit-core.min.js",
+            "types": "./lib/lit.d.ts"
         }
     },
     "files": [

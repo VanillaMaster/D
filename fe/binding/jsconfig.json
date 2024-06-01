@@ -9,13 +9,17 @@
         "allowSyntheticDefaultImports": true,
         "strict": true,
         "noImplicitAny": true,
-
+        // "preserveSymlinks": true,
+        // "skipLibCheck": true,
         "types": [
-            // "node",
+            "node",
             "backend"
         ]
-    },
+    }
+    // "exclude": [
+    //     "node_modules"
+    // ],
     // "include": [
-    //     "src/**/*",
+    //     "./**/*",
     // ]
 }

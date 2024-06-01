@@ -1,4 +1,5 @@
-import { listModules } from "./listModules.js";
+// import { listModules } from "./listModules.js";
+import { listModulesV2 as listModules } from "./listModulesV2.js"
 import { MODULES_FOLDER } from "@builtin/config/server";
 
 /**@type { WeakRef<backend.ModulesState> } */

@@ -9,18 +9,30 @@
             "import": "./src/URLSafeBase64.js"
         },
         "./*": {
-            "import": "./*",
-            "default": null
+            "import": [null, "./*"],
+            "default": [
+                {
+                    "default": null
+                },
+                {
+                    "node": null,
+                    "import": null,
+                    "require": "./*",
+                    "default": null
+                }
+            ]
         },
         "./src/secret/*": {
             "default": null
         },
         "./base64url__": {
+            "node": "./src/URLSafeBase64.js",
             "import": {
                 "import": {
                     "default": "./src/URLSafeBase64.js"
                 }
-            }
+            },
+            "default": null
         }
     },
     "files": [

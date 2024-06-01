@@ -11,7 +11,9 @@
         "./backend": {
             "import": "./src/server.js"
         },
-        "./tmp": "./src/listModulesV2.js"
+        "./esm": {
+            "import": "./src/esmResolve.js"
+        }
     },
     "files": [
         "src/**/*"

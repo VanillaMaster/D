@@ -11,5 +11,8 @@
     },
     "files": [
         "src/**/*"
-    ]
+    ],
+    "dependencies": {
+        "@builtin/module-walker": "*"
+    }
 }

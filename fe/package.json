@@ -16,7 +16,9 @@
         "server",
         "backend"
     ],
-    "scripts": {},
+    "scripts": {
+        "check:binding": "tsc --noEmit -p ./binding/jsconfig.json"
+    },
     "dependencies": {
         "@builtin/backend": "*",
         "@builtin/cjs": "*",

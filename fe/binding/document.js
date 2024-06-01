@@ -1,6 +1,12 @@
 import { join, sep } from "node:path"
 import mustache from "mustache";
 import { readFile, writeFile } from "node:fs/promises"
+import { exportsResolvePackage } from "@builtin/module-walker/esm"
+
+/**@type { readonly string[] } */
+const CJS_CONDITIONS = ["require", "default"];
+/**@type { readonly string[] } */
+const ESM_CONDITIONS = ["import", "default"];
 
 /**
  * @param { backend.Registry } modules 
@@ -10,20 +16,25 @@ export function computeImportMap(modules) {
         /**@type { Record<string, string> } */
         imports: {}
     }
-    for (const pkg in modules) {
-        const { exports, type } = modules[pkg];
-        if (type == "commonjs") for (const entry in exports) {
-            const path = exports[entry];
-            const params = new URLSearchParams();
-            params.append("sw", "intercept");
-            params.append("type", "cjs");
-            params.append("pkg", pkg);
-            if (entry !== ".") params.append("entry", entry);
-            importmap.imports[join(pkg, entry).replaceAll(sep, "/")] = join("/modules", pkg, path).replaceAll(sep, "/") + "?" + params.toString();
-        } else if (type == "module") {
+    for (const name in modules) {
+        const pkg = modules[name];
+        /**@type { Record<string, string> } */
+        if (pkg.type == "commonjs") {
+            const exports = exportsResolvePackage(pkg, CJS_CONDITIONS);
             for (const entry in exports) {
                 const path = exports[entry];
-                importmap.imports[join(pkg, entry).replaceAll(sep, "/")] = join("/modules", pkg, path).replaceAll(sep, "/")
+                const params = new URLSearchParams();
+                params.append("sw", "intercept");
+                params.append("type", "cjs");
+                params.append("pkg", name);
+                if (entry !== ".") params.append("entry", entry);
+                importmap.imports[join(name, entry).replaceAll(sep, "/")] = join("/modules", name, path).replaceAll(sep, "/") + "?" + params.toString();
+            }
+        } else if (pkg.type == "module") {
+            const exports = exportsResolvePackage(pkg, ESM_CONDITIONS);
+            for (const entry in exports) {
+                const path = exports[entry];
+                importmap.imports[join(name, entry).replaceAll(sep, "/")] = join("/modules", name, path).replaceAll(sep, "/")
             }
         }
     }

@@ -1,55 +1,12 @@
 import { lstat, readdir, readFile, readlink } from "node:fs/promises";
 import { extname, join, normalize, resolve, sep } from "node:path";
+import { count } from "./utils/count.js";
+import { matchPattern } from "./utils/matchPattern.js";
+import { exportsResolve, getExports, getExportsType } from "./esmResolve.js";
+import { IGNORED_EXTENSIONS, IGNORED_MODULES } from "@builtin/config/server";
 /**@import { Dirent } from "node:fs" */
 
-/**
- * @param { string } self 
- * @param { string } searchString 
- * @param { number } [position] 
- */
-function count(self, searchString, position = 0) {
-    if (searchString == "") return Infinity;
-    let i = 0;
-    while ((position = self.indexOf(searchString, position)) !== -1) {
-        position += searchString.length;
-        i++;
-    }
-    return i;
-}
-
 const EXTENSIONS = [".js", ".cjs", ".mjs", ".json"];
-const PATTERN = Symbol("pattern")
-
-/**
- * @param { Pjson.exports } exports 
- */
-function getExportsType(exports) {
-    if (typeof exports == "string" || Array.isArray(exports)) return 1;
-    if (typeof exports !== 'object' || exports === null) return 0;
-
-    let i = 0;
-    let isConditionalSugar = false;
-
-    for (const key in exports) {
-        const curIsConditionalSugar = key === '' || key[0] !== '.';
-        if (i++ === 0) {
-            isConditionalSugar = curIsConditionalSugar;
-        } else if (isConditionalSugar !== curIsConditionalSugar) {
-            return 2;
-        }
-    }
-    return isConditionalSugar ? 1 : 0;
-}
-/**
- * 
- * @param { Pjson.exports } exports 
- * @param { number } type
- * @returns { Pjson.SubpathExports }
- */
-function getExports(exports, type) {
-    if (type == 1) return { ".": exports };
-    return /**@type { Pjson.SubpathExports } */ (exports);
-}
 
 /**
  * @param { unknown } reason 
@@ -71,63 +28,67 @@ function __nullErr(reason) {
  * @param { string } path path to modules folder 
  */
 export async function listModulesV2(path) {
+    /**@type { backend.ModulesState } */
+    const state = {
+        extensions: {},
+        registry: {}
+    }
+
     const elements = await readdir(path, {
         withFileTypes: true
     }).catch(__nullErr);
-    if (elements == null) return;
-    /**@type { Record<string, Record<string, string>> } */
-    const packages = {}
+    if (elements == null) return state;
+    
     /**@type { Array<Promise<void> | void> } */
     const tasks = [];
-    for (const element of elements) tasks.push(processModulesEntry(element, "", packages));
+    for (const element of elements) tasks.push(processPackageEntry(element, "", state));
     while (tasks.length > 0) await tasks.pop();
 
-    console.log(packages);
-    debugger
+    return state
 }
 
 /**
  * @param { Dirent } element 
  * @param { string } prefix 
- * @param { Record<string, Record<string, string>> } out
+ * @param { backend.ModulesState } out
  */
-function processModulesEntry(element, prefix, out) {
-    if (element.isDirectory()) return processModulesDirectory(resolve(element.parentPath, element.name), element.name, prefix, out);
-    if (element.isSymbolicLink()) return processModulesSymbolicLink(element.parentPath, element.name, prefix, out);
+function processPackageEntry(element, prefix, out) {
+    if (element.isDirectory()) return processPackageDirectory(resolve(element.parentPath, element.name), element.name, prefix, out);
+    if (element.isSymbolicLink()) return processPackageSymbolicLink(element.parentPath, element.name, prefix, out);
 }
 
 /**
  * @param { string } path 
  * @param { string } name 
  * @param { string } prefix 
- * @param { Record<string, Record<string, string>> } out
+ * @param { backend.ModulesState } out
  * @returns { Promise<void> | void }
  */
-function processModulesDirectory(path, name, prefix, out) {
+function processPackageDirectory(path, name, prefix, out) {
     if (name[0] === "@") {
         if (prefix === "") return processNamespace(path, name, out);
-    } else return processModule(path, prefix + name, out);
+    } else return processPackage(path, prefix + name, out);
 }
 
 /**
  * @param { string } parentPath
  * @param { string } linkName 
  * @param { string } prefix 
- * @param { Record<string, Record<string, string>> } out
+ * @param { backend.ModulesState } out
  */
-async function processModulesSymbolicLink(parentPath, linkName, prefix, out) {
+async function processPackageSymbolicLink(parentPath, linkName, prefix, out) {
     const linkValue = await readlink(resolve(parentPath, linkName));
     const path = resolve(parentPath, linkValue);
     const stats = await lstat(path);
-    if (stats.isDirectory()) return processModulesDirectory(path, linkName, prefix, out);
+    if (stats.isDirectory()) return processPackageDirectory(path, linkName, prefix, out);
 }
 
 /**
  * @param { string } path
  * @param { string } name
- * @param { Record<string, Record<string, string>> } out
+ * @param { backend.ModulesState } out
  */
-async function processModule(path, name, out) {
+async function processPackage(path, name, out) {
     const buffer = await readFile(resolve(path, "package.json")).catch(__null);
     if (buffer == null) return;
     /**@type { Pjson } */
@@ -137,252 +98,225 @@ async function processModule(path, name, out) {
     } catch (error) {
         return void console.error(error);
     }
+    // if (name == "json-rpc-2.0") debugger;
     const {
         dependencies = {},
-        exports: __exports = pjson.main ?? "index.js",
+        exports: exportsField = `./${normalize(pjson.main ?? "index.js").replaceAll(sep, "/")}`,
         type = "commonjs",
-    } = pjson;
-    const exportType = getExportsType(__exports);
-    if (exportType == 2) return console.error("invalid package exports");
-    const exports = getExports(__exports, exportType);
 
-    const allFiles = await readdir(path, { recursive: true });
-    /**@type { string[] } */
-    const files = [];
-    for (const file of allFiles) {
-        const f = `./${normalize(file).replaceAll(sep, "/")}`;
-        if (EXTENSIONS.includes(extname(file))) files.push(f);
+        prefetch: prefetchPatterns = [],
+        editable: editablePatterns = [],
+        stylesheet: stylesheetPatterns = [],
+        kind
+    } = pjson;
+
+    const exportType = getExportsType(exportsField);
+    if (exportType == 2) return void console.error("invalid package exports");
+    const exports = getExports(exportsField, exportType);
+
+    for (let i = 0; i < prefetchPatterns.length; i++) prefetchPatterns[i] = `./${normalize(prefetchPatterns[i]).replaceAll(sep, "/")}`;
+    for (let i = 0; i < editablePatterns.length; i++) editablePatterns[i] = `./${normalize(editablePatterns[i]).replaceAll(sep, "/")}`;
+    for (let i = 0; i < stylesheetPatterns.length; i++) stylesheetPatterns[i] = `./${normalize(stylesheetPatterns[i]).replaceAll(sep, "/")}`;
+
+    if (kind !== undefined) {
+        if (IGNORED_EXTENSIONS.every(pattern => !matchPattern(pattern, name))) {
+            out.extensions[name] = kind;
+        }
     }
 
-    /**@type { ExportsTree<string> } */
-    const allowedFiles = {};
-    /**@type { ExportsTreeWithPattern<string> } */
-    const allowedFolders = {};
-    /**@type { ExportsTree<null> } */
-    const disallowedFiles = {};
-    /**@type { ExportsTree<null> } */
-    const disallowedFolders = {};
+    if (IGNORED_MODULES.every(pattern => !matchPattern(pattern, name))) {
+        const allFiles = await readdir(path, { recursive: true });
+        
+        /**@type { string[] } */
+        const files = [];
+        /**@type { string[] } */
+        const prefetch = [];
+        /**@type { string[] } */
+        const editable = [];
+        /**@type { string[] } */
+        const stylesheet = [];
+    
+        for (const file of allFiles) {
+            const path = `./${normalize(file).replaceAll(sep, "/")}`;
+    
+            if (EXTENSIONS.includes(extname(file))) files.push(path);
+            if (prefetchPatterns.some(pattern => matchPattern(pattern, path))) prefetch.push(`/modules/${name}/${path}`);
+            if (editablePatterns.some(pattern => matchPattern(pattern, path))) editable.push(`/modules/${name}/${path}`);
+            if (stylesheetPatterns.some(pattern => matchPattern(pattern, path))) stylesheet.push(`/modules/${name}/${path}`);
+        }
+    
+        /**@type { { [origin: string]: string[] } } */
+        const patterns = {};
+        for (const [origin, value] of /**@type { [key: keyof Pjson.SubpathExports, value: Pjson.SubpathExports[keyof Pjson.SubpathExports]][]} */ (Object.entries(exports))) {
+            descent(value, (patterns[origin] = []))
+        }
+    
+        const origins = collectOrigins(patterns, files);
+    
+        /**@type { Record<string, string> } */
+        const doct = {};
+    
+        for (const origin of origins) {
+            const resolved = exportsResolve(origin, exports, ["node", "import", "default"]);
+            if (typeof resolved == "string" && files.includes(resolved)) {
+                doct[origin] = resolved
+            }
+        }
 
-    for (const path in exports) processExportsRecord(
-        [],
-        /**@type { keyof Pjson.SubpathExports }*/
-        path,
-        exports[/**@type { keyof Pjson.SubpathExports }*/(path)],
-        files,
-        allowedFiles,
-        allowedFolders,
-        disallowedFiles,
-        disallowedFolders
-    );
+        out.registry[name] = new ModuleRecord(
+            origins,
+            exports,
+            Object.keys(dependencies),
+            files,
+            type,
+            kind,
+            prefetch,
+            editable,
+            stylesheet
+        )
+    }
 
-    // /**@type { Record<string, Record<string, string>> } */
-    // const exportmap = {};
-
-    // for (const path in exports) processExportsRecord(
-    //     [],
-    //     /**@type { keyof Pjson.SubpathExports }*/
-    //     (path),
-    //     exports[/**@type { keyof Pjson.SubpathExports }*/(path)],
-    //     files,
-    //     exportmap
-    // );
-
-    console.log(name, allowedFiles, allowedFolders, disallowedFiles, disallowedFolders);
 }
+
+class ModuleRecord {
+    /**
+     * @param { ArrayLike<string> | Iterable<string> } origins 
+     * @param { Pjson.SubpathExports } exports 
+     * @param { string[] } dependencies 
+     * @param { string[] } files 
+     * @param { Pjson.type } type 
+     * @param { Pjson.kind } [kind] 
+     * @param { Pjson.prefetch} [prefetch] 
+     * @param { Pjson.editable } [editable] 
+     * @param { Pjson.stylesheet } [stylesheet] 
+     */
+    constructor(origins, exports, dependencies, files, type, kind, prefetch, editable, stylesheet) {
+        this.origins = Array.from(origins);
+        this.exports = exports;
+        this.dependencies = dependencies;
+        this.files = files;
+        this.type = type;
+        if (kind !== undefined) this.kind = kind;
+        if (prefetch !== undefined && prefetch.length > 0) this.prefetch = prefetch;
+        if (editable !== undefined && editable.length > 0) this.editable = editable;
+        if (stylesheet !== undefined && stylesheet.length > 0) this.stylesheet = stylesheet;
+
+    }
+
+    /**
+     * @readonly
+     * @type { string[] }
+     */
+    origins;
+
+    /**
+     * @readonly
+     * @type { Pjson.SubpathExports }
+     */
+    exports;
+
+    /**
+     * @readonly
+     * @type { string[] }
+     */
+    dependencies;
+
+    /**
+     * @readonly
+     * @type { string[] }
+     */
+    files;
+
+    /**
+     * @readonly
+     * @type { Pjson.type }
+     */
+    type;
+
+    /**
+     * @readonly
+     * @type { Pjson.kind | undefined }
+     */
+    kind;
+
+    /**
+     * @readonly
+     * @type { Pjson.prefetch | undefined }
+     */
+    prefetch;
+
+    /**
+     * @readonly
+     * @type { Pjson.editable | undefined }
+     */
+    editable;
+
+    /**
+     * @readonly
+     * @type { Pjson.stylesheet | undefined }
+     */
+    stylesheet;
+}
+
 /**
  * @param { string } path
  * @param { string } name
- * @param { Record<string, Record<string, string>> } out
+ * @param { backend.ModulesState } out
  */
 async function processNamespace(path, name, out) {
     const elements = await readdir(path, { withFileTypes: true }).catch(__nullErr);
     if (elements == null) return;
     /**@type { Array<Promise<void> | void> } */
     const tasks = [];
-    for (const element of elements) tasks.push(processModulesEntry(element, name + "/", out));
+    for (const element of elements) tasks.push(processPackageEntry(element, name + "/", out));
     while (tasks.length > 0) await tasks.pop();
 }
 
-/**
- * @template T
- * @typedef { { [path in string]: T | ExportsTreeNode<T> } } ExportsTreeNode
- */
-/**
- * @template T
- * @typedef { { [path in string]: ExportsTreeNode<T> } } ExportsTree
- */
-/**
- * @typedef { { [PATTERN]: string } } ExportsTreeNodeWithPattern
- */
-/**
- * @template T
- * @typedef { ExportsTree<T> & { [path in string]: ExportsTreeNodeWithPattern } } ExportsTreeWithPattern
- */
 
 /**
- * @param { string[] } conditions 
- * @param { string } key 
- * @param { string | null | Pjson.ArrayExports | Pjson.ConditionalExports } exports 
- * @param { string[] } files 
- * @param { ExportsTree<string> } allowedFiles 
- * @param { ExportsTreeWithPattern<string> } allowedFolders 
- * @param { ExportsTree<null> } disallowedFiles 
- * @param { ExportsTree<null> } disallowedFolders 
- * @param { boolean } [strict] 
+ * @param { Exclude<Pjson.exports, Pjson.SubpathExports> } exports
+ * @param { string[] } out 
  */
-function processExportsRecord(
-    conditions,
-    key,
-    exports,
-    files,
-    allowedFiles,
-    allowedFolders,
-    disallowedFiles,
-    disallowedFolders,
-    strict = true
-) {
+function descent(exports, out) {
     if (typeof exports == "string") {
-        allowExport(
-            conditions,
-            key,
-            exports,
-            files,
-            allowedFiles,
-            allowedFolders
-        );
+        out.push(exports);
     } else if (exports == null) {
-        if (strict) disallowExport(conditions, key, disallowedFiles, disallowedFolders);
-
+        
     } else if (Array.isArray(exports)) {
-        for (const entry of exports) {
-            processExportsRecord(
-                conditions,
-                key,
-                entry,
-                files,
-                allowedFiles,
-                allowedFolders,
-                disallowedFiles,
-                disallowedFolders,
-                false
-            );
-        }
+        for (const entry of exports) descent(entry, out);
     } else {
-        for (const condition in exports) {
-            const entry = (exports[/**@type { keyof Pjson.ConditionalExports }*/(condition)]);
-            processExportsRecord(
-                [...conditions, condition],
-                key,
-                /**@type { Exclude<typeof entry, undefined>}*/(entry),
-                files,
-                allowedFiles,
-                allowedFolders,
-                disallowedFiles,
-                disallowedFolders
-            );
-        }
+        for (const entry of Object.values(exports)) descent(entry, out);
     }
 }
 
 /**
- * @param { string[] } conditions 
- * @param { string } key 
- * @param { string } value 
+ * @param { { [origin: string]: string[] } } patterns 
  * @param { string[] } files 
- * @param { ExportsTree<string> } allowedFiles 
- * @param { ExportsTreeWithPattern<string> } allowedFolders 
  */
-function allowExport(conditions, key, value, files, allowedFiles, allowedFolders) {
-    const k = count(key, "*"), v = count(value, "*");
-    if (k !== v) return void console.warn(key, value);
-    switch (k + v) {
-        case 0: return allowFileExport(conditions, key, value, allowedFiles);
-        case 2: return allowFolderExport(conditions, key, value, files, allowedFolders);
-        default: return void console.warn(key, value);
+function collectOrigins(patterns, files) {
+    /**@type { Set<string> } */
+    const origins = new Set();
+    for (const origin in patterns) {
+        for (const destination of patterns[origin]) {
+            const o = count(origin, "*"), d = count(destination, "*");
+            if (o !== d) {
+                console.warn(origin, destination);
+                continue;
+            }
+            switch (o + d) {
+                case 0: origins.add(origin); break;
+                case 2: {
+                    const [oLHS, oRHS] = origin.split("*");
+                    const [dLHS, dRHS] = destination.split("*");
+                    for (const file of files) if (file.startsWith(dLHS) && file.endsWith(dRHS)) {
+                        const substitutions = file.substring(dLHS.length, file.length - dRHS.length);
+                        const key = `./${join(oLHS, substitutions, oRHS).replaceAll(sep, "/")}`;
+                        origins.add(key);
+                    }
+                } break;
+                default: console.warn(origin, destination); break;
+            }
+        }
     }
+    return origins;
 }
-
-/**
- * @param { string[] } conditions 
- * @param { string } key 
- * @param { ExportsTree<null> } disallowedFiles 
- * @param { ExportsTree<null> } disallowedFolders 
- */
-function disallowExport(conditions, key, disallowedFiles, disallowedFolders) {
-    const k = count(key, "*");
-    switch (k) {
-        case 0: return void disallowAnyExport(conditions, key, disallowedFiles);
-        case 1: return void disallowAnyExport(conditions, key, disallowedFolders);
-        default: return void console.warn(key);
-    }
-}
-
-/**
- * @param { string[] } conditions 
- * @param { string } key 
- * @param { string } value 
- * @param { ExportsTree<string> } out 
- */
-function allowFileExport(conditions, key, value, out) {
-    if (conditions.length == 0) {
-        (out[key] ??= {})["default"] = value;
-    } else {
-        let node = (out[key] ??= {});
-        const length = conditions.length - 1;
-        const k = conditions[length];
-        for (let i = 0; i < length; i++) node = /**@type { ExportsTree<string> } */(node[conditions[i]] ??= {});
-        node[k] = value;
-    }
-}
-
-/**
- * @param { string[] } conditions 
- * @param { string } key 
- * @param { ExportsTree<null> } out 
- */
-function disallowAnyExport(conditions, key, out) {
-    if (conditions.length == 0) {
-        (out[key] ??= {})["default"] = null;
-    } else {
-        let node = (out[key] ??= {});
-        const length = conditions.length - 1;
-        const k = conditions[length];
-        for (let i = 0; i < length; i++) node = /**@type { ExportsTree<null> } */(node[conditions[i]] ??= {});
-        node[k] = null;
-    }
-}
-
-/**
- * @param { string[] } conditions 
- * @param { string } key 
- * @param { string } value 
- * @param { string[] } files 
- * @param { ExportsTreeWithPattern<string> } out 
- */
-function allowFolderExport(conditions, key, value, files, out) {
-    const [kLHS, kRHS] = key.split("*");
-    const [vLHS, vRHS] = value.split("*");
-    for (const file of files) if (file.startsWith(vLHS) && file.endsWith(vRHS)) {
-        const substitutions = file.substring(vLHS.length, file.length - vRHS.length);
-        const k = `./${join(kLHS, substitutions, kRHS).replaceAll(sep, "/")}`;
-        const v = `./${join(vLHS, substitutions, vRHS).replaceAll(sep, "/")}`;
-        allowFileExport(conditions, k, v, out);
-        out[k][PATTERN] = key;
-    }
-}
-
-// ({
-//     ".": "./mustache.mjs",
-//     "mustache.js": {
-//         "default": {
-//             "node": "./node/mustache.js",
-//             "default": "./default/mustache.js"
-//         },
-//         "import": "./default/mustache.js"
-//     }
-// })
-// ({
-//     "./asd/*.js": {
-//         "default": null
-//     }
-// })

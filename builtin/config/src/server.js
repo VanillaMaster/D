@@ -4,13 +4,25 @@ import { mkdir, readFile } from "node:fs/promises";
 
 export const ROOT = cwd();
 
+/**
+ * @typedef Config
+ * @property { object } modules
+ * @property { string } modules.path
+ * @property { readonly string[] } [modules.ignore]
+ * @property { object } extensions
+ * @property { readonly string[] } [extensions.ignore]
+ * @property { object } cache
+ * @property { string } cache.path
+ * @property { number } port
+ */
+
 export const [
     PORT,
     IGNORED_MODULES,
     IGNORED_EXTENSIONS,
     MODULES_FOLDER,
     CACHE_FOLDER
-] = (/**@param { backend.Config } config */function(config){ return /**@type { const } */ ([
+] = (/**@param { Config } config */function(config){ return /**@type { const } */ ([
     config.port,
     config.modules.ignore ?? [],
     config.extensions.ignore ?? [],

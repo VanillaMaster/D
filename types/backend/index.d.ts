@@ -5,9 +5,10 @@ declare namespace backend {
     
     interface ModuleRecord {
         type: PackageType;
-        exports: Record<string, string>;
+        exports: Pjson.SubpathExports;
         dependencies: string[];
         files: string[];
+        origins: string[];
         kind?: string[];
         prefetch?: string[];
         editable?: string[];
@@ -26,46 +27,7 @@ declare namespace backend {
         registry: Registry;
         extensions:  Extensions;
     }
-
-    interface PjsonExportRecord {
-        import?: string;
-        require?: string;
-        default?: string;
-    }
     
-    interface PjsonExportMap {
-        [K: string]: string | null | PjsonExportRecord
-    }
-    
-    interface Pjson {
-        name: string;
-        dependencies: Record<string, string>;
-        main?: string;
-        type?: PackageType;
-        exports?: string | object;
-        kind?: ExtensionsType[];
-        prefetch?: string[];
-        editable?: string[];
-        stylesheet?: string[];
-    }
-    
-    interface Config {
-        modules: {
-            path: string;
-            ignore?: string[];
-        }
-        extensions: {
-            ignore?: string[];
-        }
-        cache: {
-            path: string;
-        }
-        rootpage: {
-            path: string;
-        }
-        port: number;
-    }
-
 }
 
 
@@ -77,7 +39,13 @@ interface Pjson {
     type?: Pjson.type;
 
     exports?: Pjson.exports;
+
+    kind?: Pjson.kind;
+    prefetch?: Pjson.prefetch;
+    editable?: Pjson.editable;
+    stylesheet?: Pjson.stylesheet;
 }
+
 declare namespace Pjson {
     interface ArrayExports extends Array<string | null | ArrayExports | ConditionalExports> {}
     
@@ -95,4 +63,8 @@ declare namespace Pjson {
 
 
     type type = "commonjs" | "module";
+    type kind = ("server" | "client")[];
+    type prefetch = string[];
+    type editable = string[];
+    type stylesheet = string[];
 }

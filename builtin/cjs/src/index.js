@@ -2,8 +2,12 @@ import { JsModule, EXECUTOR, NAMED_EXPORT } from "./JsModule.js";
 import { JsonModule } from "./JsonModule.js";
 import { loadedPackages, pendingPackages, modulesCache, packagesCache} from "./cache.js"
 import { join } from "./path.js";
+import { exportsResolvePackage } from "@builtin/module-walker/esm"
 /**@import { Module } from "./Module.js" */
-/**@import { CJSRequire, CJSExecutor } from "./JsModule.js" */
+/**@import { CJSRequire } from "./JsModule.js" */
+
+/**@type { readonly string[] } */
+const CJS_CONDITIONS = ["require", "default"];
 
 /**
  * @param { Response } res 
@@ -24,13 +28,14 @@ async function preloadCjsPackage(pkg) {
     /**@type { backend.ModuleRecord } */
     const data = await fetch(url).then(toJson);
 
-    const { files, dependencies, exports } = data;
+    const { files, dependencies } = data;
+    const exports = exportsResolvePackage(data, CJS_CONDITIONS)
     for (let i = 0; i < files.length; i++) {
         files[i] = join("/modules", pkg, files[i]);
     }
 
     await Promise.all(files.map(fetchModule));
-
+    
     for (const entry in exports) {
         const specifier = join(pkg, entry)
         const pathname = join("/modules", pkg, exports[entry]);

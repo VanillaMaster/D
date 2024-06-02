@@ -3,6 +3,9 @@ import { createServer } from "node:http";
 import { extensions } from "@builtin/module-walker/server"
 import { PORT } from "@builtin/config/server";
 
+/**
+ * router object used by server
+ */
 export const router = Router({
     defaultRoute(req, res){
         res.statusCode = 404;
@@ -10,6 +13,9 @@ export const router = Router({
     }
 });
 
+/**
+ * standerd node js http server object
+ */
 export const server = createServer();
 server.on("request", function(req, res) {
     router.lookup(req, res);

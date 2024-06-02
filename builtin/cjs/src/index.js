@@ -22,7 +22,7 @@ function __throw(error) { throw error; }
 /**
  * @param { string } pkg
  */
-async function preloadCjsPackage(pkg) {
+async function preloadCjsPackageUnsafe(pkg) {
     const url = new URL("/api/modules", document.location.origin);
     url.searchParams.append("name", pkg);
     /**@type { backend.ModuleRecord } */
@@ -46,27 +46,27 @@ async function preloadCjsPackage(pkg) {
 }
 
 /**
- * @param { string } pkg
- * @returns { Promise<void> }
+ * Asynchronously preload cjs pacjage by specified package name
+ * 
+ * Used in pair with `require` function to avoid synchronous loading
+ * ```js
+ * await preloadCjsPackage("some-package")
+ * const packageExports = globalRequire("some-package");
+ * ```
+ * @param { string } pkg String that specifies package name
+ * @returns { Promise<void> } A Promise for the completion of preloading
  */
-function preloadCjsPackage$1(pkg) {
+export function preloadCjsPackage(pkg) {
     if (loadedPackages.has(pkg)) return Promise.resolve();
     const pending = pendingPackages.get(pkg);
     if (pending !== undefined) return pending;
-    const promise = preloadCjsPackage$2(pkg);
+    const promise = preloadCjsPackageUnsafe(pkg).finally(function() {
+        loadedPackages.add(pkg);
+        pendingPackages.delete(pkg);
+    })
     pendingPackages.set(pkg, promise);
     return promise;
 }
-/**
- * @param { string } pkg
- */
-async function preloadCjsPackage$2(pkg) {
-    await preloadCjsPackage(pkg);
-    loadedPackages.add(pkg);
-    pendingPackages.delete(pkg);
-}
-
-export { preloadCjsPackage$1 as preloadCjsPackage }
 
 /**
  * @param { string } file
@@ -110,7 +110,21 @@ async function fetchJsonModule(filename, response) {
 }
 
 /**
- * @param { string } specifier 
+ * Function implementing cjs `require`
+ * with ability to resolve only `bare` specifier
+ * 
+ * Does not cause synchronous loading,
+ * becaus can access only modules from cache,
+ * so must be used with `preloadCjsPackage`
+ * 
+ * ```js
+ * await preloadCjsPackage("some-package")
+ * const somePackage = globalRequire("some-package");
+ * const somePackageShuffle = globalRequire("some-package/shuffle")
+ * ```
+ * 
+ * @param { string } specifier Package name, or a specific feature module within a package prefixed by the package name
+ * @returns { any } Exported module content
  */
 export function globalRequire(specifier) {
     const module = packagesCache.get(specifier);
@@ -119,7 +133,21 @@ export function globalRequire(specifier) {
 }
 
 /**
- * @param { string } specifier 
+ * Function implementing cjs `require`
+ * with ability to resolve only `absolute` specifier
+ * 
+ * Does not cause synchronous loading,
+ * becaus can access only modules from cache,
+ * so must be used with `preloadCjsPackage`
+ * 
+ * ```js
+ * //some-package located at /home/user/bin/
+ * await preloadCjsPackage("some-package")
+ * const scriptExports = absoluteRequire("/home/user/bin/some-package/src/script.js");
+ * ```
+ * 
+ * @param { string } specifier Absolute path to required module 
+ * @returns { any } Exported module content
  */
 export function absoluteRequire(specifier) {
     const module = resolveModule(specifier);
@@ -128,11 +156,23 @@ export function absoluteRequire(specifier) {
 }
 
 /**
- * @param { string } specifier 
- * @param { Module } parent 
+ * function implementing cjs `require`
+ * with ability to resolve only `relative` specifier
+ * 
+ * does not cause synchronous loading,
+ * becaus can access only modules from cache,
+ * so must be used with `preloadCjsPackage`
+ * 
+ * ```js
+ * await preloadCjsPackage("package")
+ * const packageExports = relativeRequire("package");
+ * ```
+ * 
+ * @param { string } specifier Relative path to required module 
+ * @param { string } parent Path, that specifier will be resolved against
  */
 export function relativeRequire(specifier, parent) {
-    ({ pathname: specifier } = new URL(specifier, new URL(parent.filename, document.location.origin)));
+    ({ pathname: specifier } = new URL(specifier, new URL(parent, document.location.origin)));
     return absoluteRequire(specifier);
 }
 
@@ -157,7 +197,7 @@ function exportJsModule(module) {
     const executor = module[EXECUTOR];
     if (executor == null) return module.exports;
     module[EXECUTOR] = null;
-    executor(module.exports, createLocalRequire(module), module, module.filename, module.dirname);
+    executor(module.exports, createRequire(module.filename), module, module.filename, module.dirname);
     return module.exports;
 }
 /**
@@ -181,21 +221,50 @@ function resolveModule(specifier) {
 }
 
 /**
- * @param { Module } parent 
- * @returns { CJSRequire }
+ * factory for creating cjs `require` functions
+ * 
+ * ```js
+ * const require = createRequire(import.meta.url);
+ * // sibling-module.js is a CommonJS module.
+ * const siblingModule = require('./sibling-module'); 
+ * ```
+ * @param { string } parent A path to be used to construct the `require` function.
+ * @returns { CJSRequire } Require function
  */
-function createLocalRequire(parent) {
+export function createRequire(parent) {
     return function(specifier) {
         return globalRequire(specifier) ?? relativeRequire(specifier, parent) ?? __throw(new Error(`Cannot find module '${specifier}'`));
     }
 }
 
 /**
- * @param { string } pkg 
- * @param { string } [entry]
+ * Prefetching cjs module, executes it, and then return esm weapper
+ * 
+ * ```js
+ * const ESMWrapper = await prepareModuleWrapper("some-package")
+ * ```
+ * 
+ * `some-package` source text:
+ * ```js
+ * exports.answer = 42;
+ * ```
+ * 
+ * constructed wrapper:
+ * ```js
+ * import { globalRequire } from "@builtin/cjs/frontend";
+ * const module = globalRequire("some-package");
+ * export default module;
+ * export const {
+ *     answer
+ * } = module;
+ * ```
+ * 
+ * @param { string } pkg String that specifies package name
+ * @param { string } [entry] Subpath to specific feature module within a package
+ * @returns { Promise<string> } Text of ESM wrapper
  */
 export async function prepareModuleWrapper(pkg, entry = ".") {
-    await preloadCjsPackage$1(pkg);
+    await preloadCjsPackage(pkg);
 
     const exports = globalRequire(pkg);
     /**@type { string[] } */

@@ -44,18 +44,29 @@ function getEncodeBufferLength(length, off) {
 }
 
 /**
- * @param { Uint8Array } byts 
+ * Creates a url safe base64-encoded ASCII string from a binary data
+ * 
+ * ```js
+ * const text = "Hello, world";
+ * const encoder = new TextEncoder();
+ * const bytes = encoder.encode(text);
+ * const encoded = encode(bytes);
+ * ```
+ * 
+ * @param { Uint8Array } bytes Data to encode
+ * @returns { string } An ASCII string containing the url safe base64 representation of bytes
  */
-export function encode(byts) {
-    const off = byts.length % 3;
-    const length = byts.length - off;
+export function encode(bytes) {
+    const off = bytes.length % 3;
+    const length = bytes.length - off;
     const bufferLength = getEncodeBufferLength(length, off);
+    /**@type { number[] } */
     const buffer = new Array(bufferLength);
 
     let i = 0, j = 0;
     while (i < length) {
         // 24-bit slice (24 data)
-        const slice = (byts[i++] << 0x10) | (byts[i++] << 0x08) | (byts[i++]);
+        const slice = (bytes[i++] << 0x10) | (bytes[i++] << 0x08) | (bytes[i++]);
         const b1 = slice >> 0x12;
         const b2 = slice >> 0x0C & 0b111111;
         const b3 = slice >> 0x06 & 0b111111;
@@ -68,7 +79,7 @@ export function encode(byts) {
     switch (off) {
         case 1: {
             // 12-bit slice (8 data + 4 pad)
-            const slice = (byts[i] << 0x04);
+            const slice = (bytes[i] << 0x04);
             const b1 = slice >> 0x06;
             const b2 = slice & 0b111111;
             buffer[j] = ALPHABET[b1];
@@ -76,7 +87,7 @@ export function encode(byts) {
         } break;
         case 2: {
             // 18-bit slice (16 data + 2 pad)
-            const slice = (byts[i] << 0x0A) | (byts[i + 1] << 0x02);
+            const slice = (bytes[i] << 0x0A) | (bytes[i + 1] << 0x02);
             const b1 = slice >> 0x0C;
             const b2 = slice >> 0x06 & 0b111111;
             const b3 = slice & 0b111111;
@@ -103,7 +114,17 @@ function getDecodeBufferLength(length, off) {
 }
 
 /**
- * @param { string } data 
+ * Creates a binary data from a url safe base64-encoded ASCII string
+ * 
+ * ```js
+ * const encoded = "SGVsbG8sIHdvcmxk";
+ * const bytes = decode(data);
+ * const decoder = new TextDecoder();
+ * const text = decoder.decode(bytes);
+ * ```
+ * 
+ * @param { string } data An ASCII string containing the url safe base64 representation of bytes
+ * @returns { Uint8Array } Decoded bytes
  */
 export function decode(data) {
     const off = data.length % 4;

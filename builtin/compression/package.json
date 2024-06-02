@@ -5,34 +5,8 @@
     "type": "module",
     "exports": {
         ".": null,
-        "./Base64url": {
-            "import": "./src/URLSafeBase64.js"
-        },
-        "./*": {
-            "import": [null, "./*"],
-            "default": [
-                {
-                    "default": null
-                },
-                {
-                    "node": null,
-                    "import": null,
-                    "require": "./*",
-                    "default": null
-                }
-            ]
-        },
-        "./src/secret/*": {
-            "default": null
-        },
-        "./base64url__": {
-            "node": "./src/URLSafeBase64.js",
-            "import": {
-                "import": {
-                    "default": "./src/URLSafeBase64.js"
-                }
-            },
-            "default": null
+        "./base64url": {
+            "import": "./src/base64url.js"
         }
     },
     "files": [

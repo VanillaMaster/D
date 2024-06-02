@@ -5,7 +5,7 @@ Package with different compression/encoding utilities
 Package for working with url safe base64 encoding
 
 ## <span style="color: royalblue">function</span> encode
-```ts
+```
 encode(bytes: Uint8Array): string
 ```
 Creates a url safe base64-encoded ASCII string from a binary data
@@ -23,19 +23,19 @@ const encoded = encode(bytes);
 </details>
 
 ### Parameters
-```ts
+```
 bytes: Uint8Array
 ```
 Data to encode
 
 ### Return Type
-```ts
+```
 string
 ```
 An ASCII string containing the url safe base64 representation of bytes
 
 ## <span style="color: royalblue">function</span> decode
-```ts
+```
 decode(data: string): Uint8Array
 ```
 
@@ -52,13 +52,13 @@ const text = decoder.decode(bytes);
 </details>
 
 ### Parameters
-```ts
+```
 data: string
 ```
 An ASCII string containing the url safe base64 representation of bytes
 
 ### Return Type
-```ts
+```
 Uint8Array
 ```
 Decoded bytes

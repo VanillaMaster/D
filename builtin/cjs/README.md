@@ -2,7 +2,7 @@
 Tools used in cjs compatibility layer
 
 ## <span style="color: royalblue">function</span> preloadCjsPackage
-```ts
+```
 preloadCjsPackage(pkg: string): Promise<void>
 ```
 Asynchronously preload cjs pacjage by specified package name.<br>
@@ -19,19 +19,19 @@ const packageExports = globalRequire("some-package");
 </details>
 
 ### Parameters
-```ts
+```
 pkg: string
 ```
 String that specifies package name
 
 ### Return Type
-```ts
+```
 Promise<void>
 ```
 A Promise for the completion of preloading
 
 ## <span style="color: royalblue">function</span> globalRequire
-```ts
+```
 globalRequire(specifier: string): any
 ```
 Function implementing cjs `require`
@@ -52,20 +52,20 @@ const somePackageShuffle = globalRequire("some-package/shuffle");
 </details>
 
 ### Parameters
-```ts
+```
 specifier: string
 ```
 Package name, or a specific feature module within a package
 prefixed by the package name
 
 ### Return Type
-```ts
+```
 any
 ```
 Exported module content
 
 ## <span style="color: royalblue">function</span> absoluteRequire
-```ts
+```
 absoluteRequire(specifier: string): any
 ```
 Function implementing cjs `require`
@@ -86,19 +86,19 @@ const packageExports = absoluteRequire("/home/user/bin/some-package/src/script.j
 </details>
 
 ### Parameters
-```ts
+```
 specifier: string
 ```
 Absolute path to required module 
 
 ### Return Type
-```ts
+```
 any
 ```
 Exported module content
 
 ## <span style="color: royalblue">function</span> relativeRequire
-```ts
+```
 relativeRequire(specifier: string, parent: string): any
 ```
 Function implementing cjs `require`
@@ -119,24 +119,24 @@ const packageExports = relativeRequire("./src/script.js", "/home/user/bin/some-p
 </details>
 
 ### Parameters
-```ts
+```
 specifier: string
 ```
 Relative path to required module 
 
-```ts
+```
 parent: string
 ```
 Path, that `specifier` will be resolved against
 
 ### Return Type
-```ts
+```
 any
 ```
 Exported module content
 
 ## <span style="color: royalblue">function</span> createRequire
-```ts
+```
 createRequire(parent: string): CJSRequire
 ```
 Factory for creating cjs `require` functions
@@ -153,19 +153,19 @@ const siblingModule = require('./sibling-module');
 </details>
 
 ### Parameters
-```ts
+```
 parent: string
 ```
 A path to be used to construct the `require` function.
 
 ### Return Type
-```ts
+```
 CJSRequire
 ```
 Require function
 
 ## <span style="color: royalblue">function</span> prepareModuleWrapper
-```ts
+```
 prepareModuleWrapper(pkg: string, entry?: string | undefined): Promise<string>
 ```
 Prefetching cjs module, executes it, and then return esm weapper
@@ -203,18 +203,18 @@ const ESMWrapper = await prepareModuleWrapper("some-package", "./shuffle")
 </details>
 
 ### Parameters
-```ts
+```
 pkg: string
 ```
 String that specifies package name
 
-```ts
+```
 entry?: string
 ```
 Subpath to specific feature module within a package
 
 ### Return Type
-```ts
+```
 Promise<string>
 ```
 Text of ESM wrapper
@@ -223,6 +223,6 @@ Text of ESM wrapper
 CJS `require` function
 
 ### Definition
-```ts
+```
 (specifier: string) => any
 ```

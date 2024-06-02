@@ -52,10 +52,17 @@ export class XMLSaxStream extends /**@type { { new (transformer?: Transformer<st
         super(transformer);
         this.transformer = transformer;
     }
+
+    /**
+     * @private
+     * @readonly
+     * @type { XMLSaxStreamTransformer }
+     */
+    transformer;
 }
 
 /**@implements { Transformer<string, XMLNode> } */
-export class XMLSaxStreamTransformer {
+class XMLSaxStreamTransformer {
     /**
      * @param { string[] } collect 
      */

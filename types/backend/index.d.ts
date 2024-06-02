@@ -25,7 +25,7 @@ declare namespace backend {
     
     interface ModulesState {
         registry: Registry;
-        extensions:  Extensions;
+        extensions: Extensions;
     }
     
 }

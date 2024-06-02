@@ -25,7 +25,14 @@ function __nullErr(reason) {
 }
 
 /**
- * @param { string } path path to modules folder 
+ * Traverse and collect information about all modules
+ * 
+ * ```js
+ * const info = await listModulesV2("./node_modules");
+ * ```
+ * 
+ * @param { string } path Path to modules folder 
+ * @returns { Promise<backend.ModulesState> } Collected information
  */
 export async function listModulesV2(path) {
     /**@type { backend.ModulesState } */

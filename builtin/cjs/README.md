@@ -1,7 +1,7 @@
 # @builtin/cjs
 Tools used in cjs compatibility layer
 
-## ${\textsf{\color{royalblue}function}}$ preloadCjsPackage
+## <span style="color: royalblue">function</span> preloadCjsPackage
 ```ts
 preloadCjsPackage(pkg: string): Promise<void>
 ```
@@ -30,7 +30,7 @@ Promise<void>
 ```
 A Promise for the completion of preloading
 
-## ${\textsf{\color{royalblue}function}}$ globalRequire
+## <span style="color: royalblue">function</span> globalRequire
 ```ts
 globalRequire(specifier: string): any
 ```
@@ -64,7 +64,7 @@ any
 ```
 Exported module content
 
-## ${\textsf{\color{royalblue}function}}$ absoluteRequire
+## <span style="color: royalblue">function</span> absoluteRequire
 ```ts
 absoluteRequire(specifier: string): any
 ```
@@ -97,7 +97,7 @@ any
 ```
 Exported module content
 
-## ${\textsf{\color{royalblue}function}}$ relativeRequire
+## <span style="color: royalblue">function</span> relativeRequire
 ```ts
 relativeRequire(specifier: string, parent: string): any
 ```
@@ -135,7 +135,7 @@ any
 ```
 Exported module content
 
-## ${\textsf{\color{royalblue}function}}$ createRequire
+## <span style="color: royalblue">function</span> createRequire
 ```ts
 createRequire(parent: string): CJSRequire
 ```
@@ -164,7 +164,7 @@ CJSRequire
 ```
 Require function
 
-## ${\textsf{\color{royalblue}function}}$ prepareModuleWrapper
+## <span style="color: royalblue">function</span> prepareModuleWrapper
 ```ts
 prepareModuleWrapper(pkg: string, entry?: string | undefined): Promise<string>
 ```
@@ -219,7 +219,7 @@ Promise<string>
 ```
 Text of ESM wrapper
 
-## ${\textsf{\color{darkmagenta}type alias}}$ CJSRequire
+## <span style="color: darkmagenta">type alias</span> CJSRequire
 CJS `require` function
 
 ### Definition

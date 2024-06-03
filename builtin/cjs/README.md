@@ -1,12 +1,12 @@
 # @builtin/cjs
 Tools used in cjs compatibility layer
 
-## <span style="color: royalblue">function</span> preloadCjsPackage
-```
-preloadCjsPackage(pkg: string): Promise<void>
-```
-Asynchronously preload cjs pacjage by specified package name.<br>
-Used in pair with `require` function to avoid synchronous loading
+## `function` preloadCjsPackage
+
+<pre><code><b>preloadCjsPackage</b>(pkg: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise">string</a>): <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise">Promise</a>&lt;void&gt;</code></pre>
+
+> Asynchronously preload cjs pacjage by specified package name.<br>
+> Used in pair with `require` function to avoid synchronous loading
 
 ### Examples
 <details open>
@@ -19,26 +19,23 @@ const packageExports = globalRequire("some-package");
 </details>
 
 ### Parameters
-```
-pkg: string
-```
-String that specifies package name
+<pre><code><b>pkg</b>: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise">string</a></pre></code>
+> String that specifies package name
 
 ### Return Type
-```
-Promise<void>
-```
-A Promise for the completion of preloading
+<pre><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise">Promise</a>&lt;void&gt;</pre></code>
+> A Promise for the completion of preloading
 
-## <span style="color: royalblue">function</span> globalRequire
-```
-globalRequire(specifier: string): any
-```
-Function implementing cjs `require`
-with ability to resolve only `bare` specifier.<br>
-Does not cause synchronous loading,
-becaus can access only modules from cache,
-so must be used with `preloadCjsPackage`
+
+
+## `function` globalRequire
+<pre><code><b>globalRequire</b>(specifier: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise">string</a>): <a href="https://www.typescriptlang.org/docs/handbook/2/everyday-types.html#any">any</a></pre></code>
+
+> Function implementing cjs `require`
+> with ability to resolve only `bare` specifier.<br>
+> Does not cause synchronous loading,
+> becaus can access only modules from cache,
+> so must be used with `preloadCjsPackage`
 
 ### Examples
 <details open>
@@ -52,27 +49,24 @@ const somePackageShuffle = globalRequire("some-package/shuffle");
 </details>
 
 ### Parameters
-```
-specifier: string
-```
-Package name, or a specific feature module within a package
-prefixed by the package name
+<pre><code><b>specifier</b>: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise">string</a></pre></code>
+
+> Package name, or a specific feature module within a package
+> prefixed by the package name
 
 ### Return Type
-```
-any
-```
-Exported module content
+<pre><code><a href="https://www.typescriptlang.org/docs/handbook/2/everyday-types.html#any">any</a></pre></code>
 
-## <span style="color: royalblue">function</span> absoluteRequire
-```
-absoluteRequire(specifier: string): any
-```
-Function implementing cjs `require`
-with ability to resolve only `absolute` specifier.<br>
-Does not cause synchronous loading,
-becaus can access only modules from cache,
-so must be used with `preloadCjsPackage`
+> Exported module content
+
+## `function` absoluteRequire
+<pre><code><b>absoluteRequire</b>(specifier: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise">string</a>): <a href="https://www.typescriptlang.org/docs/handbook/2/everyday-types.html#any">any</a></pre></code>
+
+> Function implementing cjs `require`
+> with ability to resolve only `absolute` specifier.<br>
+> Does not cause synchronous loading,
+> becaus can access only modules from cache,
+> so must be used with `preloadCjsPackage`
 
 ### Examples
 <details open>
@@ -86,26 +80,23 @@ const packageExports = absoluteRequire("/home/user/bin/some-package/src/script.j
 </details>
 
 ### Parameters
-```
-specifier: string
-```
-Absolute path to required module 
+<pre><code><b>specifier</b>: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise">string</a></pre></code>
+
+> Absolute path to required module 
 
 ### Return Type
-```
-any
-```
-Exported module content
+<pre><code><a href="https://www.typescriptlang.org/docs/handbook/2/everyday-types.html#any">any</a></pre></code>
 
-## <span style="color: royalblue">function</span> relativeRequire
-```
-relativeRequire(specifier: string, parent: string): any
-```
-Function implementing cjs `require`
-with ability to resolve only `relative` specifier.<br>
-Does not cause synchronous loading,
-becaus can access only modules from cache,
-so must be used with `preloadCjsPackage`
+> Exported module content
+
+## `function` relativeRequire
+<pre><code><b>relativeRequire</b>(specifier: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise">string</a>, parent: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise">string</a>): <a href="https://www.typescriptlang.org/docs/handbook/2/everyday-types.html#any">any</a></pre></code>
+
+> Function implementing cjs `require`
+> with ability to resolve only `relative` specifier.<br>
+> Does not cause synchronous loading,
+> becaus can access only modules from cache,
+> so must be used with `preloadCjsPackage`
 
 ### Examples
 <details open>
@@ -119,27 +110,23 @@ const packageExports = relativeRequire("./src/script.js", "/home/user/bin/some-p
 </details>
 
 ### Parameters
-```
-specifier: string
-```
-Relative path to required module 
+<pre><code><b>specifier</b>: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise">string</a></pre></code>
 
-```
-parent: string
-```
-Path, that `specifier` will be resolved against
+> Relative path to required module 
+
+<pre><code><b>parent</b>: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise">string</a></pre></code>
+
+> Path, that `specifier` will be resolved against
 
 ### Return Type
-```
-any
-```
-Exported module content
+<pre><code><a href="https://www.typescriptlang.org/docs/handbook/2/everyday-types.html#any">any</a></pre></code>
 
-## <span style="color: royalblue">function</span> createRequire
-```
-createRequire(parent: string): CJSRequire
-```
-Factory for creating cjs `require` functions
+> Exported module content
+
+## `function` createRequire
+<pre><code><b>createRequire</b>(parent: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise">string</a>): <a href="#type-alias-cjsrequire">CJSRequire</a></pre></code>
+
+> Factory for creating cjs `require` functions
 
 ### Examples
 <details open>
@@ -153,22 +140,19 @@ const siblingModule = require('./sibling-module');
 </details>
 
 ### Parameters
-```
-parent: string
-```
-A path to be used to construct the `require` function.
+<pre><code><b>parent</b>: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise">string</a></pre></code>
+
+> A path to be used to construct the `require` function.
 
 ### Return Type
-```
-CJSRequire
-```
-Require function
+<pre><code><a href="#type-alias-cjsrequire">CJSRequire</a></pre></code>
 
-## <span style="color: royalblue">function</span> prepareModuleWrapper
-```
-prepareModuleWrapper(pkg: string, entry?: string | undefined): Promise<string>
-```
-Prefetching cjs module, executes it, and then return esm weapper
+> `require` function
+
+## `function` prepareModuleWrapper
+<pre><code><b>prepareModuleWrapper</b>(pkg: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise">string</a>, entry?: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise">string</a>): <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise">Promise</a>&lt;<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise">string</a>&gt;</pre></code>
+
+> Prefetching cjs module, executes it, and then return esm weapper
 
 ### Examples
 <details open>
@@ -203,26 +187,21 @@ const ESMWrapper = await prepareModuleWrapper("some-package", "./shuffle")
 </details>
 
 ### Parameters
-```
-pkg: string
-```
-String that specifies package name
+<pre><code><b>pkg</b>: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise">string</a></pre></code>
 
-```
-entry?: string
-```
-Subpath to specific feature module within a package
+> String that specifies package name
+
+<pre><code><i>optional</i> <b>entry</b>: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise">string</a></pre></code>
+
+>Subpath to specific feature module within a package
 
 ### Return Type
-```
-Promise<string>
-```
-Text of ESM wrapper
+<pre><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise">Promise</a>&lt;<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise">string</a>&gt;</pre></code>
 
-## <span style="color: darkmagenta">type alias</span> CJSRequire
+> Text of ESM wrapper
+
+## `type alias` CJSRequire
 CJS `require` function
 
 ### Definition
-```
-(specifier: string) => any
-```
+<pre><code>(specifier: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise">string</a>) => <a href="https://www.typescriptlang.org/docs/handbook/2/everyday-types.html#any">any</a></pre></code>

@@ -201,7 +201,7 @@ const ESMWrapper = await prepareModuleWrapper("some-package", "./shuffle")
 > Text of ESM wrapper
 
 ## `type alias` CJSRequire
-CJS `require` function
+> CJS `require` function
 
 ### Definition
 <pre><code>(specifier: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise">string</a>) => <a href="https://www.typescriptlang.org/docs/handbook/2/everyday-types.html#any">any</a></pre></code>

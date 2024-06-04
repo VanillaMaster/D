@@ -6,6 +6,9 @@ const LENGTH = Symbol("length");
 const SELF = Symbol("self");
 const CONTROLLER = Symbol("controller")
 
+/**
+ * Represent an XML element
+ */
 export class XMLNode {
     /**
      * @param { string } name 
@@ -20,6 +23,11 @@ export class XMLNode {
     /**@type { { [LENGTH]: number; } & { [i: number]: XMLNode | string; } & { [k: string]: XMLNode; } } */
     children = { [LENGTH]: 0 };
 
+    /**
+     * text content of the node
+     * 
+     * @readonly
+     */
     get text() {
         /**@type { string[] } */
         const buffer = [];
@@ -32,6 +40,8 @@ export class XMLNode {
     }
 
     /**
+     * Inserts nodes after the last child of node
+     * 
      * @param  { ...XMLNode | string } childrens 
      */
     addChildren(...childrens) {

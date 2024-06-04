@@ -3,36 +3,30 @@ Package that exports configuration file properties.
 
 Package alos includes json [schema](./schema.json) for configuration file
 
-## <span style="color: slateblue">variable</span> PORT
+## `variable` PORT
 
 ### Type
-```
-number
-```
-## <span style="color: slateblue">variable</span> IGNORED_MODULES
+<pre><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></pre></code>
+
+## `variable` IGNORED_MODULES
 
 ### Type
-```
-readonly string[]
-```
+<pre><code><i>readonly</i> <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>[]</pre></code>
 
-## <span style="color: slateblue">variable</span> IGNORED_EXTENSIONS
 
-### Type
-```
-readonly string[]
-```
-
-## <span style="color: slateblue">variable</span> MODULES_FOLDER
+## `variable` IGNORED_EXTENSIONS
 
 ### Type
-```
-string
-```
+<pre><code><i>readonly</i> <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>[]</pre></code>
 
-## <span style="color: slateblue">variable</span> CACHE_FOLDER
+
+## `variable` MODULES_FOLDER
 
 ### Type
-```
-string
-```
+<pre><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></pre></code>
+
+
+## `variable` CACHE_FOLDER
+
+### Type
+<pre><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></pre></code>

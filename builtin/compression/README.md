@@ -4,11 +4,10 @@ Package with different compression/encoding utilities
 ## @builtin/compression/base64url
 Package for working with url safe base64 encoding
 
-## <span style="color: royalblue">function</span> encode
-```
-encode(bytes: Uint8Array): string
-```
-Creates a url safe base64-encoded ASCII string from a binary data
+## `function` encode
+<pre><code><b>encode</b>(bytes: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array">Uint8Array</a>): <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></code></pre>
+
+> Creates a url safe base64-encoded ASCII string from a binary data
 
 ### Examples
 <details open>
@@ -23,21 +22,19 @@ const encoded = encode(bytes);
 </details>
 
 ### Parameters
-```
-bytes: Uint8Array
-```
-Data to encode
+<pre><code><b>bytes</b>: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array">Uint8Array</a></pre></code>
+
+> Data to encode
 
 ### Return Type
-```
-string
-```
-An ASCII string containing the url safe base64 representation of bytes
+<pre><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></pre></code>
 
-## <span style="color: royalblue">function</span> decode
-```
-decode(data: string): Uint8Array
-```
+> An ASCII string containing the url safe base64 representation of bytes
+
+## `function` decode
+<pre><code><b>decode</b>(data: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>): <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array">Uint8Array</a></code></pre>
+
+> Creates a binary data from a url safe base64-encoded ASCII string
 
 ### Examples
 <details open>
@@ -52,13 +49,11 @@ const text = decoder.decode(bytes);
 </details>
 
 ### Parameters
-```
-data: string
-```
-An ASCII string containing the url safe base64 representation of bytes
+<pre><code><b>data</b>: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></pre></code>
+
+> An ASCII string containing the url safe base64 representation of bytes
 
 ### Return Type
-```
-Uint8Array
-```
-Decoded bytes
+<pre><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array">Uint8Array</a></pre></code>
+
+> Decoded bytes

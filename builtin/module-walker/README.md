@@ -4,12 +4,11 @@ Package with module utilities
 ## @builtin/module-walker/esm
 Package with functions related to esm resolution
 
-### <span style="color: royalblue">function</span> patternKeyCompare
-```
-patternKeyCompare(a: string, b: string): number
-```
-Compares two strings that may contain a wildcard character ('*')
-and returns a value indicating their order
+### `function` patternKeyCompare
+<pre><code><b>patternKeyCompare</b>(a: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise">string</a>, b: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>): <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></code></pre>
+
+> Compares two strings that may contain a wildcard character ('*')
+> and returns a value indicating their order
 
 #### Examples
 <details open>
@@ -23,29 +22,25 @@ const mostSpecificKey = orderedKeys[0]
 </details>
 
 #### Parameters
-```
-a: string
-```
-The first string to compare
+<pre><code><b>a</b>: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></pre></code>
 
-```
-b: string
-```
-The second string to compare
+> The first string to compare
+
+<pre><code><b>b</b>: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></pre></code>
+
+> The second string to compare
 
 #### Return Type
-```
-number
-```
-A negative number if `a` should come before `b`,
-a positive number if `a` should come after `b`,
-or 0 if they are equal.
+<pre><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise">number</a></pre></code>
 
-### <span style="color: royalblue">function</span> packageTargetResolve
-```
-packageTargetResolve(target: string | null | ArrayExports | ConditionalExports, patternMatch: string | null, conditions: readonly string[]): string | null | undefined
-```
-Resolves the target of a package based on the provided conditions
+> A negative number if `a` should come before `b`,
+> a positive number if `a` should come after `b`,
+> or 0 if they are equal.
+
+### `function` packageTargetResolve
+<pre><code><b>packageTargetResolve</b>(target: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise">string</a> | <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/null">null</a> | <a href="#interface-arrayexports">ArrayExports</a> | <a href="#interface-conditionalexports">ConditionalExports</a>, patternMatch: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a> | <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/null">null</a>, conditions: <i>readonly</i> <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise">string</a>[]): <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a> | <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/null">null</a> | <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/undefined">undefined</a></code></pre>
+
+> Resolves the target of a package based on the provided conditions
 
 #### Examples
 <details open>
@@ -57,32 +52,27 @@ const target = packageTargetResolve({ default: "./*.js"}, "index", ["node", "imp
 </details>
 
 #### Parameters
-```
-target: string | null | ArrayExports | ConditionalExports
-```
-The target to resolve
+<pre><code><b>target</b>: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise">string</a> | <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/null">null</a> | <a href="#interface-arrayexports">ArrayExports</a> | <a href="#interface-conditionalexports">ConditionalExports</a></code></pre>
 
-```
-patternMatch: string | null
-```
-Substitution for pattern, or null if pattern wasnt used
+> The target to resolve
 
-```
-conditions: readonly string[]
-```
-The conditions to match
+<pre><code><b>patternMatch</b>: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a> | <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/null">null</a></code></pre>
+
+> Substitution for pattern, or null if pattern wasnt used
+
+<pre><code><b>conditions</b>: <i>readonly</i> <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise">string</a>[]</code></pre>
+
+> The conditions to match
 
 #### Return Type
-```
-string | null | undefined
-```
-The resolved target, or null if not found, or undefined if not resolvable
+<pre><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a> | <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/null">null</a> | <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/undefined">undefined</a></code></pre>
 
-### <span style="color: royalblue">function</span> exportsResolve
-```
-exportsResolve(subpath: string, exports: SubpathExports, conditions: readonly string[]): string | null | undefined
-```
-Resolves exports of a package based on the provided conditions
+> The resolved target, or null if not found, or undefined if not resolvable
+
+### `function` exportsResolve
+<pre><code><b>exportsResolve</b>(subpath: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise">string</a>, exports: <a href="#interface-subpathexports">SubpathExports</a>, conditions: <i>readonly</i> <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise">string</a>[]): <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a> | <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/null">null</a> | <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/undefined">undefined</a></code></pre>
+
+> Resolves exports of a package based on the provided conditions
 
 #### Examples
 <details open>
@@ -94,32 +84,27 @@ const target = exportsResolve(pjson.exports, ".", ["node", "import", "default"])
 </details>
 
 #### Parameters
-```
-subpath: string
-```
-Subpath to resolve
+<pre><code><b>subpath</b>: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise">string</a></pre></code>
 
-```
-exports: SubpathExports
-```
-Subpath exports object
+> Subpath to resolve
 
-```
-conditions: readonly string[]
-```
-The conditions to match
+<pre><code><b>exports</b>: <a href="#interface-subpathexports">SubpathExports</a></pre></code>
+
+> Subpath exports object
+
+<pre><code><b>conditions</b>: <i>readonly</i> <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise">string</a>[]</pre></code>
+
+> The conditions to match
 
 #### Return Type
-```
-string | null | undefined
-```
-The resolved target, or null if not found, or undefined if not resolvable
+<pre><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a> | <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/null">null</a> | <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/undefined">undefined</a></code></pre>
 
-### <span style="color: royalblue">function</span> exportsResolvePackage
-```
-exportsResolvePackage(pkg: backend.ModuleRecord, conditions: readonly string[]): Record<string, string>
-```
-Resolves all exports of module, available for provided conditions
+> The resolved target, or null if not found, or undefined if not resolvable
+
+### `function` exportsResolvePackage
+<pre><code><b>exportsResolvePackage</b>(pkg: <a href="#interface-modulerecord">ModuleRecord</a>, conditions: <i>readonly</i> <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise">string</a>[]): <a href="https://www.typescriptlang.org/docs/handbook/utility-types.html#recordkeys-type">Record</a>&lt;<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>, <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>&gt;</code></pre>
+
+> Resolves all exports of module, available for provided conditions
 
 #### Examples
 <details open>
@@ -131,27 +116,23 @@ const origins = exportsResolvePackage(moduleRecord, ["node", "import", "default"
 </details>
 
 #### Parameters
-```
-pkg: ModuleRecord
-```
-Record of module for which exports to resolve
+<pre><code><b>pkg</b>: <a href="#interface-modulerecord">ModuleRecord</a></code></pre>
 
-```
-conditions: readonly string[]
-```
-The conditions to match
+> Record of module for which exports to resolve
+
+<pre><code><b>conditions</b>: <i>readonly</i> <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise">string</a>[]</code></pre>
+
+> The conditions to match
 
 #### Return Type
-```
-Record<string, string>
-```
-Object with subpath as key and corresponding resolution as value
+<pre><code><a href="https://www.typescriptlang.org/docs/handbook/utility-types.html#recordkeys-type">Record</a>&lt;<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>, <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>&gt;</code></pre>
 
-### <span style="color: royalblue">function</span> getExportsType
-```
-getExportsType(exports: Exports): number
-```
-Determine exports object type
+> Object with subpath as key and corresponding resolution as value
+
+### `function` getExportsType
+<pre><code><b>getExportsType</b>(exports: <a href="#type-alias-exports">Exports</a>): <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></code></pre>
+
+> Determine exports object type
 
 #### Examples
 <details open>
@@ -163,23 +144,20 @@ const type = getExportsType(pjson.exports);
 </details>
 
 #### Parameters
-```
-exports: Exports
-```
-Exports record value
+<pre><code><b>exports</b>: <a href="#type-alias-exports">Exports</a></code></pre>
+
+> Exports record value
 
 #### Return Type
-```
-number
-```
-`0` for subpath exports, `1` for shorthand exports,
-`2` for invalid exports object 
+<pre><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></code></pre>
 
-### <span style="color: royalblue">function</span> getExports
-```
-getExports(exports: Exports, type: number): SubpathExports
-```
-Convert valid exports record value to subpath exports object
+> `0` for subpath exports, `1` for shorthand exports,
+> `2` for invalid exports object
+
+### `function` getExports
+<pre><code><b>getExports</b>(exports: <a href="#type-alias-exports">Exports</a>, type: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a>): <a href="#interface-subpathexports">SubpathExports</a></code></pre>
+
+> Convert valid exports record value to subpath exports object
 
 #### Examples
 <details open>
@@ -192,90 +170,69 @@ const exports = getExports(pjson.exports, type)
 </details>
 
 #### Parameters
-```
-exports: Exports
-```
-Valid exports record value
+<pre><code><b>exports</b>: <a href="#type-alias-exports">Exports</a></code></pre>
 
-```
-type: number
-```
-Exports object type
+> Valid exports record value
+<pre><code><b>type</b>: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number">number</a></code></pre>
+
+> Exports object type
 
 #### Return Type
-```
-SubpathExports
-```
-Subpath exports object
+<pre><code><a href="#interface-subpathexports">SubpathExports</a></code></pre>
 
-### <span style="color: burlywood">interface</span> ModuleRecord
+> Subpath exports object
+
+### `interface` ModuleRecord
 #### Properties
-```
-type: "commonjs" | "module"
-```
-```
-exports: SubpathExports
-```
-```
-dependencies:  string[]
-```
-```
-files: string[]
-```
-```
-origins: string[]
-```
-```
-kind?: string[]
-```
-```
-prefetch?: string[]
-```
-```
-editable?: string[]
-```
-```
-stylesheet?: string[]
-```
 
-### <span style="color: burlywood">interface</span> SubpathExports
+<pre><code><b>type</b>: "commonjs" | "module"</code></pre>
+
+<pre><code><b>exports</b>: <a href="#interface-subpathexports">SubpathExports</a></code></pre>
+
+<pre><code><b>dependencies</b>: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>[]</code></pre>
+
+<pre><code><b>files</b>: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>[]</code></pre>
+
+<pre><code><b>origins</b>: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>[]</code></pre>
+
+<pre><code><i>optional</i> <b>kind</b>: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>[]</code></pre>
+
+<pre><code><i>optional</i> <b>prefetch</b>: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>[]</code></pre>
+
+<pre><code><i>editable</i> <b>prefetch</b>: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>[]</code></pre>
+
+<pre><code><i>editable</i> <b>stylesheet</b>: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>[]</code></pre>
+
+### `interface` SubpathExports
 #### Properties
-```
-[subpath: `.${string}`]: string | null | ArrayExports | ConditionalExports;
-```
 
-### <span style="color: burlywood">interface</span> ConditionalExports
+<pre><code>[<b>subpath</b>: `.${<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>}`]: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise">string</a> | <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/null">null</a> | <a href="#interface-arrayexports">ArrayExports</a> | <a href="#interface-conditionalexports">ConditionalExports</a></code></pre>
+
+### `interface` ConditionalExports
 #### Properties
-```
-import?:  string | null | ArrayExports | ConditionalExports;
-```
-```
-require?: string | null | ArrayExports | ConditionalExports;
-```
-```
-default?: string | null | ArrayExports | ConditionalExports;
-```
+<pre><code><i>optional</i> <b>import</b>: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise">string</a> | <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/null">null</a> | <a href="#interface-arrayexports">ArrayExports</a> | <a href="#interface-conditionalexports">ConditionalExports</a></code></pre>
 
-### <span style="color: burlywood">interface</span> ArrayExports
-extends
-```
-Array<string | null | ArrayExports | ConditionalExports>
-```
+<pre><code><i>optional</i> <b>require</b>: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise">string</a> | <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/null">null</a> | <a href="#interface-arrayexports">ArrayExports</a> | <a href="#interface-conditionalexports">ConditionalExports</a></code></pre>
 
-## <span style="color: darkmagenta">type alias</span> Exports
+<pre><code><i>optional</i> <b>default</b>: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise">string</a> | <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/null">null</a> | <a href="#interface-arrayexports">ArrayExports</a> | <a href="#interface-conditionalexports">ConditionalExports</a></code></pre>
+
+### `interface` ArrayExports
+> extends
+> <pre><code>Array&lt;<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise">string</a> | <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/null">null</a> | <a href="#interface-arrayexports">ArrayExports</a> | <a href="#interface-conditionalexports">ConditionalExports</a>&gt;</code></pre>
+
+## `type alias` Exports
 ### Definition
-```
-string | null | ArrayExports | ConditionalExports | SubpathExports;
-```
+<pre><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise">string</a> | <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/null">null</a> | <a href="#interface-arrayexports">ArrayExports</a> | <a href="#interface-conditionalexports">ConditionalExports</a> | <a href="#interface-subpathexports">SubpathExports</a></code></pre>
+
+
 
 ## @builtin/module-walker/backend
 Package containing module traverse tools
 
-### <span style="color: royalblue">function</span> listModules
-```
-listModules(path: string): Promise<ModulesState>
-```
-Traverse and collect information about all modules
+### `function` listModules
+<pre><code><b>listModules</b>(path: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>): <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise">Promise</a>&lt;<a href="#interface-modulesstate">ModulesState</a>&gt;</code></pre>
+
+> Traverse and collect information about all modules
 
 #### Examples
 <details open>
@@ -287,34 +244,26 @@ const info = await listModulesV2("../node_modules");
 </details>
 
 #### Parameters
-```
-path: string
-```
-Path to modules folder 
+<pre><code><b>path</b>: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a></code></pre>
+
+> Path to modules folder 
 
 #### Return Type
-```
-Promise<ModulesState>
-```
-Collected information
+<pre><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise">Promise</a>&lt;<a href="#interface-modulesstate">ModulesState</a>&gt;</code></pre>
 
-### <span style="color: burlywood">interface</span> ModulesState
-#### Properties
-```
-registry: Registry
-```
-```
-extensions: Extensions
-```
+> Collected information
 
-### <span style="color: burlywood">interface</span> Registry
+### `interface` ModulesState
 #### Properties
-```
-[name: string]: ModuleRecord
-```
+<pre><code><b>registry</b>: <a href="#interface-registry">Registry</a></code></pre>
 
-### <span style="color: burlywood">interface</span> Extensions
+<pre><code><b>extensions</b>: <a href="#interface-extensions">Extensions</a></code></pre>
+
+### `interface` Registry
 #### Properties
-```
-[name: string]: ("server" | "client")[]
-```
+<pre><code>[<b>name</b>: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise">string</a>]: <a href="#interface-modulerecord">ModuleRecord</a></code></pre>
+
+### `interface` Extensions
+#### Properties
+<pre><code>[<b>name</b>: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise">string</a>]: ("server" | "client")[]</code></pre>
+

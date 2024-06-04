@@ -1,3 +1,4 @@
+import { encode } from "@builtin/compression/base64url"
 const FORBIDDEN_HEADER_NAMES = new Set([
     "accept-charset",
     "accept-encoding",
@@ -22,6 +23,32 @@ const FORBIDDEN_HEADER_NAMES = new Set([
     "upgrade",
     "via"
 ]);
+
+// /**
+//  * 
+//  * @param { string | URL | Request } input 
+//  * @param { RequestInit } [init] 
+//  * @returns { Promise<Response> }
+//  */
+// export function proxyFetch(input, init) {
+//     if (init) {
+//         const { headers: _headers, ..._init } = init;
+//         /**@type { Record<string, string> } */
+//         const headers = {};
+//         if (_headers == undefined) {
+//             headers["x-headers"] = "e30"
+//         } else {
+//             const encoder = new TextEncoder();
+//             if (_headers instanceof Headers) {
+//                 headers["x-headers"] = encode(encoder.encode(JSON.stringify(Object.fromEntries(_headers.entries()))));
+//             } else if (Array.isArray(_headers)) {
+//                 headers["x-headers"] = encode(encoder.encode(JSON.stringify(Object.fromEntries(_headers))));
+//             } else {
+//                 headers["x-headers"] = encode(encoder.encode(JSON.stringify(_headers)));
+//             }
+//         }
+//     }
+// }
 
 /**
  * @param { string | URL | Request } input 

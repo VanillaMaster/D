@@ -2,7 +2,6 @@
 Tools used in cjs compatibility layer
 
 ## `function` preloadCjsPackage
-
 <pre><code><b>preloadCjsPackage</b>(pkg: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise">string</a>): <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise">Promise</a>&lt;void&gt;</code></pre>
 
 > Asynchronously preload cjs pacjage by specified package name.<br>
@@ -20,10 +19,12 @@ const packageExports = globalRequire("some-package");
 
 ### Parameters
 <pre><code><b>pkg</b>: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise">string</a></pre></code>
+
 > String that specifies package name
 
 ### Return Type
 <pre><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise">Promise</a>&lt;void&gt;</pre></code>
+
 > A Promise for the completion of preloading
 
 

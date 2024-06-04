@@ -29,4 +29,4 @@
 
 ##### Parameters
 <pre><code><b>collect</b>: <i>readonly</i> <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>[]</code></pre>
-> tag names to collect and emit
+> Tag names to collect and emit

@@ -23,3 +23,10 @@
 ### `class` XMLSaxStream
 > extends
 > <pre><code><a href="https://developer.mozilla.org/en-US/docs/Web/API/TransformStream">TransformStream</a>&lt;<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>, <a href="#class-xmlnode">XMLNode</a>&gt;</code></pre>
+
+#### Constructors
+<pre><code><i>new</i> <b>XMLSaxStream</b>(collect: <i>readonly</i> <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>[])</code></pre>
+
+##### Parameters
+<pre><code><b>collect</b>: <i>readonly</i> <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">string</a>[]</code></pre>
+> tag names to collect and emit

@@ -14,5 +14,8 @@
     "extensions": {
         "ignore": []
     },
+    "services": {
+        "ignore": []
+    },
     "port": 8080
 }

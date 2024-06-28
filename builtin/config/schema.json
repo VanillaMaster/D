@@ -28,6 +28,17 @@
                 }
             }
         },
+        "services": {
+            "type": "object",
+            "properties": {
+                "ignore": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
         "cache": {
             "type": "object",
             "properties": {

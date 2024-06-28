@@ -1,0 +1,44 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "allOf": [{ "$ref": "https://json.schemastore.org/package" }],
+    "properties": {
+        "kind": {
+            "oneOf": [
+                {
+                    "type": "string"
+                },
+                {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            ]
+        },
+        "prefetch": {
+            "description": "The 'prefetch' field is an array of files to include into bootstrap page as 'prefetch' link",
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
+        },
+        "editable": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
+        },
+        "stylesheet": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
+        },
+        "service.manifest.version": {
+            "type": "number"
+        }
+    },
+    "required": [
+        "service.manifest.version"
+    ]    
+}

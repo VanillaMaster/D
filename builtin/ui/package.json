@@ -6,18 +6,15 @@
     "type": "module",
     "exports": {
         ".": null,
-        "./server": {
-            "import": "./src/server.js"
-        },
         "./client": {
             "import": "./src/client.js"
         },
-        
-        "./backend": {
-            "import": "./src/server.js"
-        },
         "./frontend": {
             "import": "./src/client.js"
+        },
+
+        "./time": {
+            "import": "./src/time.js"
         }
     },
     "files": [
@@ -32,9 +29,7 @@
         "@types/node": "^20.12.12"
     },
     "kind": [
-        "server",
         "client",
-        "backend",
         "frontend"
     ],
     "disabled": false,

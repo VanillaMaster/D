@@ -19,7 +19,7 @@ function unprocessableEntity(res) {
  * @param { IncomingMessage } req
  * @param { ServerResponse } res
  */
-export function handleRPC(req, res) {
+function handleRPC(req, res) {
     const { "content-length": rawLength, "content-type": mime } = req.headers;
     const length = Number(rawLength);
 

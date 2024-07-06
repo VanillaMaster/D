@@ -49,6 +49,11 @@ function requestCallBack(proxyRes) {
     })
 }
 
+router.get("/api/headers", function(req, res) {
+    res.setHeader("content-type", "application/json")
+    res.end(JSON.stringify(req.headers));
+});
+
 /**
  * @typedef { { [RESPONSE]: ServerResponse } } MetaRequest
  */
@@ -67,15 +72,16 @@ router.all("/api/proxy", function(req, res) {
     const xheaders = JSON.parse(TEXT_DECODER.decode(headersByts));
     const xurl = TEXT_DECODER.decode(urlBytes);
 
-    for (const [key, value] of Object.entries(xheaders)) {
-        headers.set(key, value);
-    }
+    // for (const [key, value] of Object.entries(xheaders)) {
+    //     headers.set(key, value);
+    // }
 
     const { hostname, pathname: path, error } = parseURL(xurl);
     if (error) return unprocessableEntity(res);
 
     const proxyReq = request({
-        headers: Object.fromEntries(headers.entries()),
+        // headers: Object.fromEntries(headers.entries()),
+        headers: xheaders,
         method,
         hostname,
         path

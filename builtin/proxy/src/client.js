@@ -12,8 +12,12 @@ export function proxyFetch(input, init) {
     const request = new Request(input, init);
     const { url, headers: originalHeaders } = request;
     const headers = new Headers(originalHeaders);
-    const { host } = new URL(url);
-    headers.set("host", host);
+    
+    if (!headers.has("host")) {
+        const { host } = new URL(url);
+        headers.set("host", host);
+    }
+
     const encodedHeaders = encode(
         TEXT_ENCODER.encode(
             JSON.stringify(

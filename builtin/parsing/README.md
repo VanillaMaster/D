@@ -1,6 +1,8 @@
 # @builtin/parsing
+Module for parsing well-know formats
 
 ## @builtin/parsing/xml
+XML related tools
 
 ### `class` XMLNode
 > Represent an XML element

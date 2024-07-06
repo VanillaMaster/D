@@ -15,7 +15,7 @@
         "@builtin/module-walker": "*",
         "@builtin/parsing": "*",
         "@builtin/proxy": "*",
-        "@builtin/rpc": "*",
+        "@builtin/communication": "*",
         "@builtin/staticfiles": "*",
         "@builtin/ui": "*",
         "@builtin/backend": "*",

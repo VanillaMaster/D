@@ -1,4 +1,5 @@
 {
+    "$schema": "https://raw.githubusercontent.com/vanillamaster/d/main/schema.json",
     "name": "@builtin/parsing",
     "version": "0.0.1",
     "private": true,
@@ -14,5 +15,6 @@
     ],
     "dependencies": {
         "sax": "github:isaacs/sax-js"
-    }
+    },
+    "service.manifest.version": 1
 }

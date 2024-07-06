@@ -1,4 +1,5 @@
 {
+    "$schema": "https://raw.githubusercontent.com/vanillamaster/d/main/schema.json",
     "name": "@builtin/lit",
     "version": "0.0.1",
     "private": true,
@@ -16,5 +17,6 @@
     },
     "files": [
         "lib/**/*"
-    ]
+    ],
+    "service.manifest.version": 1
 }

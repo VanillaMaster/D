@@ -265,12 +265,12 @@ export function createRequire(parent) {
  */
 export async function prepareModuleWrapper(pkg, entry = ".") {
     await preloadCjsPackage(pkg);
-
-    const exports = globalRequire(pkg);
+    const specifier = join(pkg, entry);
+    const exports = globalRequire(specifier);
+    
     /**@type { string[] } */
     const exportedNames = [];
     if (exports[NAMED_EXPORT] === true) for (const name in exports) if (name !== "default") exportedNames.push(name);
-    const specifier = join(pkg, entry)
     return constructModuleWrapper(specifier, exportedNames);
 }
 

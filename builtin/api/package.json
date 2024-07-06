@@ -1,4 +1,5 @@
 {
+    "$schema": "https://raw.githubusercontent.com/vanillamaster/d/main/schema.json",
     "name": "@builtin/api",
     "version": "0.0.1",
     "private": true,
@@ -8,7 +9,6 @@
         "./server": {
             "import": "./src/index.js"
         },
-
         "./backend": {
             "import": "./src/index.js"
         }
@@ -25,5 +25,6 @@
     "devDependencies": {
         "@types/node": "^20.12.12"
     },
-    "kind": ["server", "backend"]
+    "kind": ["server", "backend"],
+    "service.manifest.version": 1
 }

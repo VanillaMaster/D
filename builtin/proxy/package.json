@@ -1,4 +1,5 @@
 {
+    "$schema": "https://raw.githubusercontent.com/vanillamaster/d/main/schema.json",
     "name": "@builtin/proxy",
     "version": "0.0.1",
     "private": true,
@@ -23,10 +24,12 @@
         "src/**/*"
     ],
     "dependencies": {
-        "@builtin/backend": "*"
+        "@builtin/backend": "*",
+        "@builtin/compression": "*"
     },
     "devDependencies": {
         "@types/node": "^20.12.12"
     },
-    "kind": ["server", "backend"]
+    "kind": ["server", "backend"],
+    "service.manifest.version": 1
 }

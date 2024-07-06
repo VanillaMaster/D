@@ -7,7 +7,7 @@ import "./components/FeedCard.js"
 import "./components/Thumbnail.js"
 import "./components/Card.js"
 
-import { client } from "@builtin/rpc/client";
+import { client } from "@builtin/communication/client";
 
 client.request("echo", { text: "Hello, World!" }).then(console.log);
 
@@ -26,28 +26,11 @@ await (async function() {
 
 import { fetch as fetchProxy } from "@builtin/proxy/client"
 import { XMLSaxStream } from "@builtin/parsing/xml"
-
+import { fromNow } from "./time.js"
 (async function() {
 
-    const rtf = new Intl.RelativeTimeFormat();
-    /**
-     * 
-     * @param { Date } date 
-     */
-    function fromNow(date) {
-        const time = date.getTime() - Date.now();
-        const absolute = Math.abs(time);
-        if (absolute >= 31_536_000_000) return rtf.format(Math.trunc(time / 31_536_000_000), "year");
-        if (absolute >= 2_592_000_000) return rtf.format(Math.trunc(time / 2_592_000_000), "month");
-        if (absolute >= 604_800_000) return rtf.format(Math.trunc(time / 604_800_000), "week");
-        if (absolute >= 86_400_000) return rtf.format(Math.trunc(time / 86_400_000), "day");
-        if (absolute >= 3_600_000) return rtf.format(Math.trunc(time / 3_600_000), "hour");
-        if (absolute >= 60_000) return rtf.format(Math.trunc(time / 60_000), "minute");
-        return rtf.format(time, "second");
-    }
-
     const response = await fetchProxy("https://habr.com/ru/rss/articles/?fl=ru");
-    if (response.body == null) throw new Error(); 
+    if (response.body == null) throw new Error();
     const container = /**@type { HTMLElement } */(document.getElementById("tmp-body"));
     const template = document.createElement("template");
     const promise = response.body.pipeThrough(new TextDecoderStream("utf-8")).pipeThrough(new XMLSaxStream(["item"])).pipeTo(new WritableStream({

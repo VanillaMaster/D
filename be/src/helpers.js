@@ -36,6 +36,9 @@ export function unprocessableEntity(res) {
 /**@type { Record<string, string> } */
 const MIME = {
     ".js":   "text/javascript",
+    ".cjs":   "text/javascript",
+    ".mjs":   "text/javascript",
+
     ".json": "application/json",
 
     ".html": "text/html",

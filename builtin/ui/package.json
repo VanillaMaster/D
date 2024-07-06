@@ -1,5 +1,5 @@
 {
-    "$schema": "schema.json",
+    "$schema": "https://raw.githubusercontent.com/vanillamaster/d/main/schema.json",
     "name": "@builtin/ui",
     "version": "0.0.1",
     "private": true,

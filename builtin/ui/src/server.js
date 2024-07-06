@@ -1,4 +1,4 @@
-import { server } from "@builtin/rpc/server"
+import { server } from "@builtin/communication/server"
 
 server.addMethod("echo", ({ text }) => text);
 server.addMethod("log", ({ message }) => console.log(message));

@@ -3,12 +3,15 @@ import "@builtin/ui/client"
 import { fetch as fetchProxy } from "@builtin/proxy/client"
 import { XMLSaxStream } from "@builtin/parsing/xml"
 import { fromNow } from "@builtin/ui/time"
+import { setTitle } from "@builtin/ui/client";
 
 const response = await fetchProxy("https://habr.com/ru/rss/articles/?fl=ru");
 if (response.body == null) throw new Error();
 
 const container = /**@type { HTMLElement } */(document.getElementById("tmp-body"));
 const template = document.createElement("template");
+
+setTitle("Habr.com");
 
 response.body.pipeThrough(new TextDecoderStream("utf-8")).pipeThrough(new XMLSaxStream(["item"])).pipeTo(new WritableStream({
     write(node) {

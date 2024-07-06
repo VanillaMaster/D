@@ -23,3 +23,12 @@ await (async function() {
     template.innerHTML = html;
     document.body.append(template.content);
 })();
+
+const HT = /**@type { HTMLHeadingElement } */(document.getElementById("header-title"));
+
+/**
+ * @param { string } title 
+ */
+export function setTitle(title) {
+    HT.innerText = title;
+}

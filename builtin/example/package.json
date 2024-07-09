@@ -8,7 +8,7 @@
             "import": "./index.js"
         },
         "./client": {
-            "import": "./index.js"
+            "import": "./test2.js"
         }
     },
     "kind": ["client", "frontend"],

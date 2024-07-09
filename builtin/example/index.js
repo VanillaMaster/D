@@ -8,7 +8,7 @@ import { setTitle } from "@builtin/ui/client";
 const response = await fetchProxy("https://habr.com/ru/rss/articles/?fl=ru");
 if (response.body == null) throw new Error();
 
-const container = /**@type { HTMLElement } */(document.getElementById("tmp-body"));
+const container = /**@type { HTMLElement } */(document.getElementById("builtin-body"));
 const template = document.createElement("template");
 
 setTitle("Habr.com");
